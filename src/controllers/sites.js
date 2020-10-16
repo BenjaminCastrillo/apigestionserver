@@ -15,26 +15,18 @@ const { validationresult } = require('express-validator');
 /**
  ** Obtener lista de sites (con sus places) de un usuario
  
- *@Params id user
+ *@Params user_id, languaje_id
  --------------------------------
  */
 
 const getSitesByUser = (req, res) => {
 
 
-
-    /* if (!valid.valorNumerico(req.params.user_id)) {
-        return res.status(203).json({
-            result: false,
-            message: 'tipo de dato en parametro incorrecto',
-            body: ''
-        });
-    }
-*/
-    let valerr = req.validationErrors(true);
-
-    console.log(valerr);
     let id = [req.params.user_id];
+
+    req.params.languaje_id
+
+    console.log(req.params.languaje_id);
 
     conectionDB.pool.query(queries.getSitesByUser, id)
         .then((response) => {

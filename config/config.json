@@ -1,0 +1,56 @@
+{
+    "port": 3700,
+
+    "localization": {
+        "defaultLang": 1,
+        "path": "",
+        "langs": [
+            { "id": 1, "name": "Español", "code": "es_ES" },
+            { "id": 2, "name": "English", "code": "en_GB" }
+        ]
+    },
+    "db": {
+        "user": "postgres",
+        "host": "localhost",
+        "password": "",
+        "database": "screen_inventory"
+    },
+
+    "storage": {
+        "basePath": "/filer",
+        "conversionPath": "/filer/conversion",
+        "tempFolder": "/filer/temp"
+    },
+    "servers": {
+        "api": "http://localhost:3700"
+    },
+    "expresscredentials": {
+        "username": "yedra_api",
+        "password": "k9t868r5wpwq"
+    },
+    "logger": {
+        "info": {
+            "transports": {
+                "console": {},
+                "redis": {}
+            }
+        },
+        "warn": {
+            "transports": {
+                "console": {},
+                "redis": {}
+            }
+        },
+        "error": {
+            "transports": {
+                "console": {},
+                "redis": {}
+            }
+        },
+        "audit": {
+            "transports": {
+                "redis": {}
+            }
+        }
+    }
+}

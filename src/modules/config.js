@@ -14,13 +14,13 @@
 
 ---------------------------------------*/
 //Definimos nombre del módulo
-var __moduleName = 'src/modules/config';
+const __moduleName = 'src/modules/config';
 
 ///////////// Dependencias del módulo ///////////////////
 const fs = require('fs');
-const util = require('util');
+// const util = require('util');
 const extend = require('extend');
-
+const colors = require('colors/safe');
 
 /********************************************
  *            PÚBLICO
@@ -31,14 +31,14 @@ module.exports = config;
 
 config.loadConfiguration = function loadConfiguration(mode) {
 
-    console.log('LOADING ENVIRONMENT --- ' + mode + ' ----');
-    var data = fs.readFileSync('./config/' + mode + '.json');
-
+    console.log('LOADING ENVIRONMENT _________' + mode);
+    let data = fs.readFileSync('./config/' + mode + '.json');
     try {
         configObj = JSON.parse(data);
         extend(true, config, configObj);
     } catch (err) {
-        console.log('Error parseando el fichero ' + mode + '.json de configuración.')
+        console.log(colors.red('Error parsing configuration file ' + mode + '.json'));
         console.log(err);
-    }
-};
+    };
+
+}

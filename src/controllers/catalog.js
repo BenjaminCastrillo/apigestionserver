@@ -1,13 +1,25 @@
 const conectionDB = require('../modules/database');
 const queries = require('../models/queries');
 const colors = require('colors/safe');
+const { body, validationResult } = require('express-validator');
+const config = require('../modules/config');
+const validator = require('validator');
+
+
+// inicializacion de constantes
+
+const validLanguajes = new Array();
+const defaultLanguaje = [];
+config.localization.langs.forEach(element => {
+    validLanguajes.push(element.id);
+});
+defaultLanguaje[0] = config.localization.defaultLang;
 
 /**********************************
  *
  ** Catalogo de datos generales de la aplicación
  *
  ***********************************/
-
 
 // Prueba servidor
 const getInicio = (req, res) => {
@@ -26,7 +38,27 @@ const getInicio = (req, res) => {
 
 const getCountries = (req, res) => {
 
-    let id = [req.params.languaje_id];
+
+
+    const error = validationResult(req); // resultado de la valoracion el parametro languaje_id numerico
+
+    if (!error.isEmpty()) {
+        //  return res.status(400).json({ error: error.array() });
+        res.status(400).json({
+            result: false,
+            message: 'Parametro invalido',
+            errorCode: 12,
+            body: {
+                error: errors
+            }
+        })
+        let txterr = 'ERR: ' + error.errors + req.method + req.headers.host + req.url;
+        console.log(colors.red(txterr));
+        return;
+    }
+
+    // if languaje_id not found to get default languaje
+    let id = (validLanguajes.includes(req.params.languaje_id)) ? [req.params.languaje_id] : defaultLanguaje;
 
 
     conectionDB.pool.query(queries.getCountries, id)
@@ -44,6 +76,7 @@ const getCountries = (req, res) => {
             console.log(colors.red(`ERR: ${e}, ${req.method} ${req.headers.host}${req.url}`));
 
         });
+    return;
 }
 
 /**

@@ -2,17 +2,23 @@
 const __moduleName = 'app';
 
 const express = require('express');
-const bodyParser = require('body-parser');
+const fileUpload = require('express-fileupload');
 const morgan = require('morgan');
 const colors = require('colors/safe');
 require('dotenv').config(); // leemos fichero .dev para determinar entorno del sistema
 const config = require('./src/modules/config');
-const { myAuthorizer } = require('./src/modules/middlwares');
-// var errors = require('./src/modules/errors');
+const { myAuthorizer, errorMiddleware } = require('./src/modules/middlwares');
+const cors = require('cors');
+
+// const errors = require('./src/modules/errors');
 const basicAuth = require('express-basic-auth');
+// const errorMiddleware = require('./src/modules/middlwares')
+
 
 // ejecutamos express
 const app = express();
+
+app.use(cors());
 
 // configuracion
 
@@ -24,9 +30,16 @@ const port = config.port; // puerto del servidor express
 // TENGO QUE VER COMO CONECTAR A LA BASE DE DATOS UNA VEZ
 
 // middlewares
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
-app.use(morgan('combined'));
+
+app.use(express.json());
+app.use(express.urlencoded({ extend: false }));
+app.use(morgan('dev'));
+app.use(fileUpload({
+    useTempFiles: true,
+    tempFileDir: '/tmp/'
+}));
+
+
 // app.use(errors.parseError);
 
 // Gestionamos los errores ( pasados como next(err) )
@@ -38,6 +51,11 @@ app.use(morgan('combined'));
 // rutas
 
 app.use(require('./src/routes/routes'))
+
+
+// app.use(errorMiddleware)
+
+
 
 //CORS
 

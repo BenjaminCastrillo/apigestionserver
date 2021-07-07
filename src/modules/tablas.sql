@@ -48,7 +48,7 @@ Ahora no se usan ya que no hay pantallas publicas';
 CREATE TABLE public.contact_phone
 (
     id integer NOT NULL DEFAULT nextval('contact_phone_id_seq'::regclass),
-    id_contact_place integer NOT NULL,
+    id_contact_venue integer NOT NULL,
     phone_number character varying(18) COLLATE pg_catalog."default" NOT NULL,
     notes character varying(200) COLLATE pg_catalog."default",
     CONSTRAINT contact_phone_pkey PRIMARY KEY (id)
@@ -64,22 +64,22 @@ COMMENT ON TABLE public.contact_phone
 
 /* tablas de contacto del local */
 
-CREATE TABLE public.contact_place
+CREATE TABLE public.contact_venue
 (
-    id integer NOT NULL DEFAULT nextval('contact_place_id_seq'::regclass),
+    id integer NOT NULL DEFAULT nextval('contact_venue_id_seq'::regclass),
     name character varying(30) COLLATE pg_catalog."default" NOT NULL,
     email character varying(40) COLLATE pg_catalog."default",
-    id_place integer NOT NULL,
+    id_venue integer NOT NULL,
     notes character varying(200) COLLATE pg_catalog."default",
-    CONSTRAINT contact_place_pkey PRIMARY KEY (id)
+    CONSTRAINT contact_venue_pkey PRIMARY KEY (id)
 )
 
 TABLESPACE pg_default;
 
-ALTER TABLE public.contact_place
+ALTER TABLE public.contact_venue
     OWNER to postgres;
 
-COMMENT ON TABLE public.contact_place
+COMMENT ON TABLE public.contact_venue
     IS 'Personas de contacto del local';
 
     /* tabla de paises */
@@ -161,7 +161,7 @@ CREATE TABLE public.location
 (
     id integer NOT NULL DEFAULT nextval('location_id_seq'::regclass),
     id_territorial_ent integer NOT NULL,
-    id_place integer NOT NULL,
+    id_venue integer NOT NULL,
     hierarchy_ integer,
     id_territorial_org integer NOT NULL,
     CONSTRAINT location_pkey PRIMARY KEY (id)
@@ -264,11 +264,11 @@ ALTER TABLE public.parameter
 COMMENT ON TABLE public.parameter
     IS 'Datos generales y valores posibles para columnas';
 
-/* tabla de places locales donde se instalan pantallas */
+/* tabla de venues locales donde se instalan pantallas */
 
-CREATE TABLE public.place
+CREATE TABLE public.venue
 (
-    id integer NOT NULL DEFAULT nextval('place_id_seq'::regclass),
+    id integer NOT NULL DEFAULT nextval('venue_id_seq'::regclass),
     id_customer integer NOT NULL,
     name character varying(150) COLLATE pg_catalog."default",
     id_road_type integer NOT NULL,
@@ -281,34 +281,34 @@ CREATE TABLE public.place
     id_market_region integer,
     id_brand integer,
     deleted boolean NOT NULL DEFAULT false,
-    CONSTRAINT place_pkey PRIMARY KEY (id)
+    CONSTRAINT venue_pkey PRIMARY KEY (id)
 )
 
 TABLESPACE pg_default;
 
-ALTER TABLE public.place
+ALTER TABLE public.venue
     OWNER to postgres;
 
-COMMENT ON TABLE public.place
+COMMENT ON TABLE public.venue
     IS 'Local donde se sitúan las pantallas';
 
     /* tabla de horarios de los locales */
 
-    CREATE TABLE public.place_schedule
+    CREATE TABLE public.venue_schedule
 (
-    id integer NOT NULL DEFAULT nextval('place_schedule_id_seq'::regclass),
-    id_place integer NOT NULL,
+    id integer NOT NULL DEFAULT nextval('venue_schedule_id_seq'::regclass),
+    id_venue integer NOT NULL,
     week_schedule character varying(126) COLLATE pg_catalog."default" NOT NULL,
     schedule_type character varying COLLATE pg_catalog."default",
-    CONSTRAINT place_schedule_pkey PRIMARY KEY (id)
+    CONSTRAINT venue_schedule_pkey PRIMARY KEY (id)
 )
 
 TABLESPACE pg_default;
 
-ALTER TABLE public.place_schedule
+ALTER TABLE public.venue_schedule
     OWNER to postgres;
 
-COMMENT ON TABLE public.place_schedule
+COMMENT ON TABLE public.venue_schedule
     IS 'Horario del local';
 
  /* tabla de players */  
@@ -460,12 +460,11 @@ CREATE TABLE public.site
     id integer NOT NULL DEFAULT nextval('site_id_seq'::regclass),
     id_site_comercial character varying(100) COLLATE pg_catalog."default" NOT NULL,
     id_pti bigint NOT NULL,
-    id_place integer NOT NULL,
+    id_venue integer NOT NULL,
     id_customer integer NOT NULL,
     id_net integer,
     entry_date timestamp with time zone NOT NULL,
     id_status integer,
-    id_brand integer,
     public_ boolean,
     on_off boolean,
     deleted boolean NOT NULL DEFAULT false,

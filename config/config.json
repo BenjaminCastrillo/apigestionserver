@@ -9,17 +9,25 @@
             { "id": 2, "name": "English", "code": "en_GB" }
         ]
     },
-    "db": {
+    "db_screen_inventory": {
         "user": "postgres",
         "host": "localhost",
         "password": "",
         "database": "screen_inventory"
     },
 
+    "db_cms": {
+        "user": "postgres",
+        "host": "localhost",
+        "password": "",
+        "database": "cms"
+    },
+
     "storage": {
         "basePath": "/filer",
         "conversionPath": "/filer/conversion",
-        "tempFolder": "/filer/temp"
+        "tempFolder": "/filer/temp",
+        "images": "/home/benjamin/files"
     },
     "servers": {
         "api": "http://localhost:3700"
@@ -52,5 +60,6 @@
                 "redis": {}
             }
         }
-    }
+    },
+    "validExtensions": ["jpg", "png", "gif", "jpeg"]
 }

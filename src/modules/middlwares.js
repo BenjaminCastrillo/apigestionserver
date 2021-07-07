@@ -2,16 +2,6 @@ const { param, validationResult } = require('express-validator');
 const config = require('./config');
 const basicAuth = require('express-basic-auth');
 
-const ParamIsNumber = (req, res, next) => {
-
-    param('languaje_id').isInt();
-
-    console.log('hola', req.params);
-
-    next();
-
-}
-
 const expressAuthentication = (req, res, next) => {
 
     console.log(config.expresscredentials.username);
@@ -22,6 +12,10 @@ const expressAuthentication = (req, res, next) => {
 
 }
 
+async function validateUserId(req, res, next) {
+
+    next()
+}
 
 function myAuthorizer(username, password) {
 
@@ -34,8 +28,21 @@ function myAuthorizer(username, password) {
     console.log(userMatches, passwordMatches);
     return userMatches & passwordMatches;
 }
+
+function errorMiddleware(err, req, res, next) {
+    console.log('estoy en el middleware de errores');
+    res.status(400).json({
+        status: error,
+        name: err.name,
+        path: error.path,
+        message: err.message
+    })
+}
+
+
 module.exports = {
     expressAuthentication,
-    ParamIsNumber,
-    myAuthorizer
+    myAuthorizer,
+    errorMiddleware,
+    validateUserId
 }

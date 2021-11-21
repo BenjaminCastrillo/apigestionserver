@@ -4,9 +4,12 @@
     "localization": {
         "defaultLang": 1,
         "path": "",
-        "langs": [
-            { "id": 1, "name": "Español", "code": "es_ES" },
-            { "id": 2, "name": "English", "code": "en_GB" }
+        "langs": [{
+                "id": 1,
+                "name": "Español",
+                "code": "es"
+            },
+            { "id": 2, "name": "English", "code": "en_gb" }
         ]
     },
     "db_screen_inventory": {
@@ -61,5 +64,6 @@
             }
         }
     },
-    "validExtensions": ["jpg", "png", "gif", "jpeg"]
+    "validExtensions": ["jpg", "png", "gif", "jpeg"],
+    "validDurationLicenses": [1, 2, 3, 6, 12, 24, 36, 60]
 }

@@ -2,6 +2,7 @@
 const __moduleName = 'app';
 
 const express = require('express');
+// const bodyParser = require('body-parser')
 const fileUpload = require('express-fileupload');
 const morgan = require('morgan');
 const colors = require('colors/safe');
@@ -30,9 +31,13 @@ const port = config.port; // puerto del servidor express
 // TENGO QUE VER COMO CONECTAR A LA BASE DE DATOS UNA VEZ
 
 // middlewares
+app.use(express.json({ limit: '50 mb' }));
 
-app.use(express.json());
-app.use(express.urlencoded({ extend: false }));
+app.use(express.urlencoded({
+    limit: '50 mb',
+    extend: true
+}));
+
 app.use(morgan('dev'));
 app.use(fileUpload({
     useTempFiles: true,

@@ -30,7 +30,7 @@ function myAuthorizer(username, password) {
 }
 
 function errorMiddleware(err, req, res, next) {
-    console.log('estoy en el middleware de errores');
+
     res.status(400).json({
         status: error,
         name: err.name,

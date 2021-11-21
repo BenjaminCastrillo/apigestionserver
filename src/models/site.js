@@ -1,14 +1,14 @@
 class Site {
-    constructor(id, id_site_comercial, id_pti, id_venue, id_customer,
+    constructor(id, id_site_comercial, id_pti, id_venue, id_customer, identification_customer, name_customer,
         id_network, des_network, id_status,
-        des_status, entry_date, public_, on_off, text_,
-        id_screen_location, des_screen_location, category,
+        des_status, entry_date, image, public_, on_off, text_,
+        id_screen_location, des_screen_location, deleted_location, category,
         id_screen, inches, serial_, id_screen_brand,
         des_screen_brand, id_screen_model,
-        des_screen_model, resolution_width, resolution_heigth,
-        id_screen_type, des_screen_type,
-        situation, id_orientation, des_orientation, cabinets_width,
-        cabinets_heigth, id_player, serial_number, mac,
+        des_screen_model, resolution_width, resolution_height,
+        id_screen_type, des_screen_type, situation, panel, pixel, id_orientation, des_orientation, screen_width,
+        screen_height, modules_width, modules_height,
+        id_player, serial_number, mac,
         id_orientation_player, des_orientation_player, id_os, des_os,
         os_version, app_version, license
     )
@@ -18,7 +18,11 @@ class Site {
         this.siteComercialId = id_site_comercial;
         this.idpti = id_pti;
         this.venueId = id_venue;
-        this.customerId = id_customer;
+        this.customer = {
+            id: id_customer,
+            identification: identification_customer,
+            name: name_customer
+        };
         this.network = {
             id: id_network,
             description: des_network
@@ -27,13 +31,15 @@ class Site {
             id: id_status,
             description: des_status
         };
-        this.entry_date = entry_date;
-        this.public_ = public_;
+        this.entryDate = entry_date;
+        this.image = image;
+        this.publicScreen = public_;
         this.on_off = on_off;
-        this.text_ = text_;
+        this.text = text_;
         this.screenLocation = {
             id: id_screen_location,
-            description: des_screen_location
+            description: des_screen_location,
+            deleted: deleted_location
         };
         this.category = category;
         this.screen = {
@@ -51,19 +57,23 @@ class Site {
             },
 
             resolutionWidth: resolution_width,
-            resolutionHeigth: resolution_heigth,
+            resolutionHeigth: resolution_height,
             screenType: {
                 id: id_screen_type,
-                description: des_screen_type
+                description: des_screen_type,
+                panel: panel
             },
 
-            situation: situation,
+            pixel: pixel,
             orientation: {
                 id: id_orientation,
                 description: des_orientation
             },
-            cabinetsWidth: cabinets_width,
-            cabinetsHeigth: cabinets_heigth
+            screenWidth: screen_width,
+            screenHeight: screen_height,
+            modulesWidth: modules_width,
+            modulesHeight: modules_height,
+            situation: situation
         };
         this.player = {
             id: id_player,
@@ -79,7 +89,7 @@ class Site {
             },
             osVersion: os_version,
             appVersion: app_version,
-            activeLicense: license
+            license: license
 
         }
 

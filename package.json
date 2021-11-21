@@ -10,6 +10,7 @@
     "author": "Benjamin Castrillo",
     "license": "MIT",
     "dependencies": {
+        "bcryptjs": "^2.4.3",
         "body-parser": "^1.19.0",
         "colors": "^1.4.0",
         "connect-multiparty": "^2.2.0",

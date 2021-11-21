@@ -1,6 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const uuid = require('uuid/v4');
+const moment = require('moment');
+const { body, validationResult } = require('express-validator');
 
 const conectionDB = require('../modules/database');
 const queries = require('../models/queries');
@@ -13,6 +15,17 @@ const config = require('../modules/config');
 // extensiones de ficheros de imagenes validas
 const validExtensions = config.validExtensions;
 const imagenDirectory = config.storage.images;
+const {
+    getWeekDays
+
+} = require('../modules/servicesdatavenuesandsites');
+
+const {
+    getCustomerSchedules
+
+} = require('../modules/servicesdatacustomer');
+
+
 
 /**********************************
  *
@@ -30,15 +43,28 @@ const imagenDirectory = config.storage.images;
  */
 
 const getMarketRegionsByIdCustomer = (req, res) => {
-    const __functionName = arguments.callee.name;
+    const __functionName = 'getMarketRegionsByIdCustomer';
+
+    const err = validationResult(req); // result of param evaluation 
+    if (!paramValidation(err, req, res, 1)) return
+    letmarketRegions = []
     let error;
     let customerId = [req.params.customer_id];
 
     conectionDB.pool.query(queries.getMarketRegionsByIdCustomer, customerId)
         .then(response => {
+
+            marketRegions = response.rows.map(elem => {
+                return {
+                    id: elem.id,
+                    description: elem.description,
+                    customerId: elem.id_customer,
+                    deleted: elem.deleted
+                }
+            });
             res.status(200).json({
                 result: true,
-                data: response.rows
+                data: marketRegions
             });
         })
         .catch(e => {
@@ -63,16 +89,32 @@ const getMarketRegionsByIdCustomer = (req, res) => {
  */
 
 const getBrandsByIdCustomer = (req, res) => {
-    const __functionName = arguments.callee.name;
+    const __functionName = 'getBrandsByIdCustomer';
+
+    const err = validationResult(req); // result of param evaluation 
+    let brands = []
     let error;
     let customerId = [req.params.customer_id];
 
     conectionDB.pool.query(queries.getBrandsByIdCustomer, customerId)
         .then(response => {
+
+            brands = response.rows.map(elem => {
+                return {
+                    id: elem.id,
+                    description: elem.description,
+                    image: elem.image,
+                    color: elem.color,
+                    customerId: elem.id_customer,
+                    deleted: elem.deleted
+                }
+            });
+
+
             res.status(200).json({
                 result: true,
-                data: response.rows
-            });
+                data: brands
+            })
         })
         .catch(e => {
             error = new Error.createPgError(e, __moduleName, __functionName);
@@ -83,11 +125,14 @@ const getBrandsByIdCustomer = (req, res) => {
             error.alert();
 
         });
+
+
 }
+
 
 /**
  ** Obtener la lista de localizaciones interiores de pantallas para un id de cliente
- ** Get list of indor screen location  for a  id client
+ ** Get list of indoor screen location  for a  id client
  ** Tablas: screen_location
  *@Params customerId
  --------------------------------
@@ -95,6 +140,8 @@ const getBrandsByIdCustomer = (req, res) => {
 
 const getScreenLocationByIdCustomer = (req, res) => {
     const __functionName = 'getScreenLocationByIdCustomer';
+    const err = validationResult(req); // result of param evaluation 
+    if (!paramValidation(err, req, res, 1)) return
     let error;
     let customerId = [req.params.customer_id];
 
@@ -116,6 +163,62 @@ const getScreenLocationByIdCustomer = (req, res) => {
         });
 }
 
+/**
+** Obtener lista de horarios de un un cliente en un idioma
+**
+**   Get list of schedulers by customer and language *
+**    Tables: customer_schedules 
+**    @Params customerId,languageId
+    -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+**/
+
+const getSchedulesByIdCustomer = (req, res) => {
+    const __functionName = 'getSchedulesByIdCustomer';
+    let error;
+    let languageId = req.params.language_id;
+    const err = validationResult(req); // validacion del parametro languaje_id numerico
+    if (!paramValidation(err, req, res, 1)) return
+    let customerId = req.params.customer_id;
+
+    const codigoLenguaje = config.localization.langs.find(element =>
+        element.id === Number(languageId));
+
+    moment.locale(codigoLenguaje.code)
+
+
+    getSchedulesData(customerId, languageId)
+        .then(response => {
+            res.json({
+                result: true,
+                data: response,
+                message: null
+            });
+        })
+        .catch(err => {
+            res.status(500).json({
+                result: false,
+                message: 'Error interno del servidor'
+            });
+        })
+
+
+    return;
+
+
+}
+
+async function getSchedulesData(customerId, languageId) {
+    let week = new Array();
+    let schedule = new Array();
+    try {
+        week = await getWeekDays(languageId);
+        schedule = await getCustomerSchedules(customerId, week);
+    } catch (err) {
+        throw err;
+    }
+
+    return schedule
+}
 
 /**
  ** Obtener la lista de codigos validos para el codigo de emplazamiento para un id de cliente
@@ -127,15 +230,36 @@ const getScreenLocationByIdCustomer = (req, res) => {
 
 const getSitesCodeByIdCustomer = (req, res) => {
     const __functionName = 'getSitesCodeByIdCustomer';
+    const err = validationResult(req); // result of param evaluation 
+    if (!paramValidation(err, req, res, 1)) return
     let error;
     let customerId = [req.params.customer_id];
 
     conectionDB.pool.query(queries.getSiteComercialCodeByIdCustomer, customerId)
         .then(response => {
-            res.status(200).json({
-                result: true,
-                data: response.rows
-            });
+            if (response.rowCount == 0) {
+                customerId = ['0'];
+                response = conectionDB.pool.query(queries.getSiteComercialCodeByIdCustomer, customerId)
+                    .then(response => {
+                        res.status(200).json({
+                            result: true,
+                            data: response.rows
+                        });
+                    })
+                    .catch(e => {
+                        error = new Error.createPgError(e, __moduleName, __functionName);
+                        res.status(500).json({
+                            result: false,
+                            message: error.userMessage
+                        });
+                        error.alert();
+                    })
+            } else {
+                res.status(200).json({
+                    result: true,
+                    data: response.rows
+                });
+            }
         })
         .catch(e => {
             error = new Error.createPgError(e, __moduleName, __functionName);
@@ -163,8 +287,7 @@ const insertImageBrand = (req, res) => {
 
     // let imageType = req.params.image_type.charAt(0);
     // if (!imageType.toUpperCase().match(expresion)) imageType = 'T';
-    // console.log(req.files);
-    // console.log(req.body);
+
 
     if (!req.files || Object.keys(req.files).length === 0) {
         res.status(400).json({
@@ -193,14 +316,9 @@ const insertImageBrand = (req, res) => {
         }
     });
 
-    console.log('-----------------------------------------------------', hora);
-    console.log('los datos que recibimos en formato tabla:');
-    console.log(file);
-    console.log(imageCodeArray);
-
     try {
         saveImageFile(file, imageCodeArray, () => {
-            console.log('envio resultado');
+
             res.json({
                 result: true,
                 message: `ficheros grabados con éxito`
@@ -208,7 +326,6 @@ const insertImageBrand = (req, res) => {
         });
 
     } catch (e) {
-        console.log(e);
         res.status(500).json({
             result: false,
             message: "No se ha salvado el fichero de la imagen"
@@ -216,9 +333,6 @@ const insertImageBrand = (req, res) => {
 
 
     }
-
-    console.log('salgo por el final');
-
     return
 }
 
@@ -228,23 +342,22 @@ async function saveImageFile(file, imageCodeArray, resultadoOk) {
 
     let arrayNameFile = [];
 
-
     for (let i = 0; i < file.length; i++) {
-        console.log(i);
+
 
         // obtenemos el codigo de brand y customer a partir del codigo de imagen
 
         try {
 
-            resp = await conectionDB.pool.query(queries.getBrandsByIdCustomer, [1])
-            console.log('las brands que hay ahora', resp.rows);
+            //   resp = await conectionDB.pool.query(queries.getBrandsByIdCustomer, [1])
 
+            console.log('codigo de imagen a buscar', imageCodeArray[i])
 
-            console.log('vamos a actualizar la tabla de brand', imageCodeArray[i]);
             respuesta = await conectionDB.pool.query(queries.getBrandByImage, [imageCodeArray[i]]);
-            console.log('lo que encuentro para el codigo de imagen ', respuesta);
+            console.log('marca  y cliente ', respuesta.rows[0].id_brand, respuesta.rows[0].id_customer);
 
             let idBrand = respuesta.rows[0].id_brand.toString();
+
             let idCustomer = respuesta.rows[0].id_customer.toString();
 
             // formamos el  nombre archivo de imagen definitivo
@@ -253,7 +366,7 @@ async function saveImageFile(file, imageCodeArray, resultadoOk) {
 
             // actualizamos bbdd con el nombre de la imagen
             let param = [idBrand, imageFileName];
-            console.log('los datos para actualizar la tabla brand', param);
+
             response = await conectionDB.pool.query(queries.updateBrandImageById, param);
 
             // Guardamos el archivo
@@ -269,7 +382,7 @@ async function saveImageFile(file, imageCodeArray, resultadoOk) {
 
     } // for
 
-    console.log('estoy al final de la funcion saveImageFile');
+
     resultadoOk();
     return;
 }
@@ -295,6 +408,8 @@ const getImageBrand = (req, res) => {
     };
 
 }
+
+
 
 /**
  ** Obtener la marca comercial por id de marca
@@ -326,14 +441,41 @@ const getBrandById = (req, res) => {
         });
 }
 
-*/
 
+
+*
+/
+/**********************************
+ *
+ ** crea objeto error si la validacion de parametros lo requiere
+ ** create error object if parameter validation requires it
+ *
+ *@param errorvalidation
+ *?response validation result
+ */
+
+const paramValidation = (err, req, res, errorCode) => {
+    const __functionName = 'paramValidation';
+
+    if (!err.isEmpty()) {
+        let error = new Error.createValidationError(err.errors, req, __moduleName, __functionName, errorCode);
+        res.status(400).json({
+            result: false,
+            message: error.userMessage,
+        })
+        error.alert();
+        return false;
+    }
+    return true;
+
+}
 
 module.exports = {
     getMarketRegionsByIdCustomer,
     getBrandsByIdCustomer,
     getScreenLocationByIdCustomer,
     getSitesCodeByIdCustomer,
+    getSchedulesByIdCustomer,
     insertImageBrand,
     getImageBrand,
 

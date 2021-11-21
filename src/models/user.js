@@ -1,20 +1,25 @@
-class user {
-    constructor(id_user, name, surname, last_access, notes,
-        id_language, super_user, email, password, customers, owner_user, user_relationship, sites, categories) {
+class User {
+    constructor(id_user, name, surname, last_access, id_language, email, password, id_rol, desc_rol,
+        user_relationship, notes, entry_date, blocked,
+
+        customers, sites, categories) {
 
         this.id = id_user;
-
         this.name = name;
         this.surname = surname;
         this.lastAccess = last_access;
-        this.notes = notes;
         this.languageId = id_language;
-        this.superUser = super_user;
         this.email = email;
         this.password = password;
-        this.customerUserList = customers;
-        this.ownerUser = owner_user;
+        this.rol = {
+            id: id_rol,
+            description: desc_rol
+        };
         this.relationship = user_relationship;
+        this.notes = notes;
+        this.entryDate = entry_date;
+        this.blocked = blocked;
+        this.customerUserList = customers;
         this.sitesLists = sites;
         this.categories = categories;
     }

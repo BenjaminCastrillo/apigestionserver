@@ -106,6 +106,7 @@ const venuesAndSitesByUser = (req, res) => {
 
     getAllVenues(userId, language, returnSites)
         .then(response => {
+
             res.json({
                 result: true,
                 data: response
@@ -1000,11 +1001,13 @@ async function deleteVenueData(venueId) {
     const dataQuery = [venueId, fecha];
 
     try {
-
+        await conectionDB.pool.query('BEGIN');
         await conectionDB.pool.query(queries.deleteVenue, dataQuery);
+        await conectionDB.pool.query(queries.deleteSiteByIdVenue, dataQuery);
+        await conectionDB.pool.query('COMMIT');
 
     } catch (err) {
-
+        conectionDB.pool.query('ROLLBACK');
         throw err;
     }
 

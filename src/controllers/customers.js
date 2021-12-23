@@ -485,6 +485,8 @@ async function updateCustomerData(customerData) {
     let fecha = new Date();
     let ano = fecha.getFullYear();
 
+    console.log('en update', customerData)
+
     try {
         await conectionDB.pool.query('BEGIN');
         await conectionDB.pool.query(queries.updateCustomer, dataQuery);

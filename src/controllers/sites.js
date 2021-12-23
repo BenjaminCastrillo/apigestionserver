@@ -140,6 +140,39 @@ const updateSite = (req, res) => {
     return
 }
 
+
+const updateStatusSite = (req, res) => {
+    const __functionName = 'updateStatusSite';
+    let error;
+    const fecha = new Date();
+
+    const a = req.body.siteId;
+    const b = req.body.newStatus;
+
+
+    console.log(req.body)
+
+    changeStatusSite(a, b)
+        .then(response => {
+            res.json({
+                result: true,
+                data: response,
+                message: null
+            });
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({
+                result: false,
+                message: 'Error interno del servidor'
+            });
+        })
+
+
+    return
+
+}
+
 /**
  ** Borrar un emplazamiento
  ** delete the site by id
@@ -467,7 +500,7 @@ async function getSitesDescriptions(sites, language, user) {
             screenOrientationObject = await getOrientationById(sites[i].id_orientation, language[0]);
             playerOrientationObject = await getOrientationById(sites[i].id_orientation_player, language[0]);
             osObject = await getOsById(sites[i].id_os);
-            license = await getLicenseById(sites[i].license_id);
+            license = await getLicenseById(sites[i].license_id, language[0]);
             category = await getCategoryBySite(sites[i].id_site);
             customerObject = await getCustomerById(sites[i].id_customer);
 
@@ -643,6 +676,38 @@ async function deleteSiteData(siteId) {
 
 
 
+/**********************************
+ *
+ ** Cambio estado de site
+ ** change status   site
+ ** Tablas: site
+ *@param siteId, newstatus
+ 
+ *
+ *?response siteId
+ ***********************************/
+
+async function changeStatusSite(id, newStatus) {
+    const __functionName = 'changeStatusSite';
+
+    let fecha = new Date();
+    const dataQuery = [id, newStatus];
+
+    console.log('xxxx', dataQuery);
+
+    try {
+
+        await conectionDB.pool.query(queries.updateStatusSite, dataQuery);
+
+    } catch (err) {
+
+        throw err;
+    }
+
+    return id;
+}
+
+
 async function saveImageFileSite(file, imageCodeArray, resultadoOk) {
     const __functionName = 'saveImageFileSite';
 
@@ -692,6 +757,7 @@ async function saveImageFileSite(file, imageCodeArray, resultadoOk) {
 module.exports = {
     sitesById,
     updateSite,
+    updateStatusSite,
     deleteSite,
     getImageSite,
     insertImageSite,

@@ -179,7 +179,9 @@ const insertUser = async(req, res) => {
     const fecha = new Date();
     let passwordHash = '';
 
-    passwordHash = await bcryptjs.hash(req.body.password, 8);
+    let salt = await bcryptjs.genSalt(10);
+    passwordHash = await bcryptjs.hash(req.body.password, salt);
+    console.log('salt', salt)
 
     const userObject = new clase.User(req.body.id, req.body.name,
         req.body.surname, req.body.lastAccess, req.body.languageId, req.body.email, passwordHash,
@@ -436,13 +438,13 @@ async function updateUserData(userData, newPassword) {
         if (newPassword) {
             dataQuery = [userData.id, userData.name, userData.surname, userData.languageId,
                 userData.email, passwordHash, userData.rol.id, userData.relationship,
-                userData.notes, userData.blocked
+                userData.notes, userData.blocked, 0
             ];
             await conectionDB.pool.query(queries.updateUserPassword, dataQuery);
         } else {
             dataQuery = [userData.id, userData.name, userData.surname, userData.languageId,
                 userData.email, userData.rol.id, userData.relationship,
-                userData.notes, userData.blocked
+                userData.notes, userData.blocked, 0
             ];
             await conectionDB.pool.query(queries.updateUserNoPassword, dataQuery);
         }

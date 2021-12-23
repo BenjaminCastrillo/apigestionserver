@@ -6,12 +6,14 @@ const multiparti = require('connect-multiparty')
 
 // dependencias 
 const config = require('../modules/config');
+const login = require('../controllers/login');
 const users = require('../controllers/users');
 const sites = require('../controllers/sites');
 const venues = require('../controllers/venues');
 const catalog = require('../controllers/catalog');
 const catalog_customer = require('../controllers/catalog_customer');
 const customers = require('../controllers/customers');
+
 
 // para validar el usuario que llama al servicio en el futuro 
 const { expressAuthentication } = require('../modules/middlwares');
@@ -26,6 +28,10 @@ const { expressAuthentication } = require('../modules/middlwares');
   Rutas
  
 ********************************/
+
+//* login
+
+router.post('/login', login.validUser);
 
 //* Generales
 router.get('/', catalog.getInicio);
@@ -109,6 +115,7 @@ router.put('/venueimage/:venue_id', expressAuthentication, venues.putImageVenue)
 //* Sites
 router.get('/sitesbyid/:site_id/:user_id/:language_id', expressAuthentication, [param('site_id').isInt().withMessage('invalid parameter')], sites.sitesById);
 router.put('/sites', expressAuthentication, sites.updateSite);
+router.put('/statusites', expressAuthentication, sites.updateStatusSite);
 router.delete('/sites/:id', expressAuthentication, [param('id').isInt().withMessage('invalid parameter')], sites.deleteSite);
 
 // image sites

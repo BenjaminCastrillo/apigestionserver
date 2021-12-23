@@ -1,16 +1,43 @@
 const { param, validationResult } = require('express-validator');
-const config = require('./config');
+const jwt = require('jsonwebtoken');
+// const config = require('./config');
 const basicAuth = require('express-basic-auth');
+const config = require('../modules/config');
+const { getNextIdSite } = require('../models/queries');
 
 const expressAuthentication = (req, res, next) => {
 
-    console.log(config.expresscredentials.username);
-    console.log(config.expresscredentials.password);
-    console.log("Por ahora no autentico los servicios");
+    // console.log(config.expresscredentials.username);
+    // console.log(config.expresscredentials.password);
+    const accessToken = req.headers['authorization'];
+    console.log("CODIGO DE AUTENTICACION PARSEADO", accessToken)
 
+    // if (!accessToken) {
+    //     res.status(401).json({
+    //         result: false,
+    //         data: 'Usuario no autorizado, sin token'
+    //     });
+    // } else {
+
+    //     jwt.verify(accessToken, config.authentication_key, (err, usuario) => {
+
+    //         if (err) {
+    //             res.status(401).json({
+    //                 result: false,
+    //                 data: 'Usuario no autorizado'
+    //             });
+
+    //         } else {
+    //             next()
+
+    //         }
+    //     });
+    // }
     next();
-
+    return
 }
+
+
 
 async function validateUserId(req, res, next) {
 
@@ -20,7 +47,7 @@ async function validateUserId(req, res, next) {
 function myAuthorizer(username, password) {
 
     const user = config.config.expresscredentials.username;
-    const password = config.config.expresscredentials.password;
+    const pw = config.config.expresscredentials.password;
 
 
     const userMatches = basicAuth.safeCompare(username, user)

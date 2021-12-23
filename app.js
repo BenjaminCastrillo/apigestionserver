@@ -10,6 +10,7 @@ require('dotenv').config(); // leemos fichero .dev para determinar entorno del s
 const config = require('./src/modules/config');
 const { myAuthorizer, errorMiddleware } = require('./src/modules/middlwares');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 
 // const errors = require('./src/modules/errors');
 const basicAuth = require('express-basic-auth');
@@ -26,6 +27,8 @@ app.use(cors());
 config.loadConfiguration(process.env.APP_ENVIRONMENT);
 
 const port = config.port; // puerto del servidor express
+
+// const jwtKey = config.authentication_key; // creo que esto no es necesario aqui
 
 // conexion a bbdd
 // TENGO QUE VER COMO CONECTAR A LA BASE DE DATOS UNA VEZ
@@ -51,7 +54,9 @@ app.use(fileUpload({
 // app.use(errors.errorHandler);
 
 
-// Pendiente la autenticacion de las llamadas
+// Autenticacion de las llamadas ES NECESARIO ?????????
+
+// app.set('key', jwtKey);
 
 // rutas
 

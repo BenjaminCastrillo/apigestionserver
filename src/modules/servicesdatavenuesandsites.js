@@ -358,24 +358,53 @@ async function getExceptionSitesByUser(userId) {
  *@Params licenseId
  --------------------------------
  */
-async function getLicenseById(licenseId) {
+async function getLicenseById(licenseId, language) {
     const __functionName = 'getLicenseById';
-    const param = [licenseId];
-
-    let result = {};
-    let valid = true;
+    let param = [licenseId];
     const today = new Date();
+    let a, b = '1';
+    let licenciaActiva = true;
+
+    let result = {
+        id: 0,
+        activationDate: today,
+        expirationDate: today,
+        durationMonths: 0,
+        licenseNumber: null,
+        valid: false,
+        text: null
+    };
+
     try {
         let response = await conectionDB.pool.query(queries.getLicenseById, param);
-        if (response.rowCount != 0)
-            result = {
-                id: response.rows[0].id_license,
-                activationDate: response.rows[0].activation_date,
-                expirationDate: response.rows[0].expiration_date,
-                durationMonths: response.rows[0].duration_months,
-                licenseNumber: response.rows[0].license_number,
-                valid: today > result.expiration_date ? false : true
+
+        if (response.rowCount != 0) {
+            if (!response.rows[0].expiration_date) { // no tiene todavia dia de expiración
+                a = today;
+            } else {
+                a = response.rows[0].expiration_date;
             };
+            if (today > a) {
+                licenciaActiva = false;
+                b = '2';
+            };
+            param = [b, language]
+
+            let c = await conectionDB.pool.query(queries.getTextLicenseById, param);
+            if (c.rowCount != 0) {
+                result = {
+                    id: response.rows[0].id_license,
+                    activationDate: response.rows[0].activation_date,
+                    expirationDate: response.rows[0].expiration_date,
+                    durationMonths: response.rows[0].duration_months,
+                    licenseNumber: response.rows[0].license_number,
+                    valid: licenciaActiva,
+                    text: c.rows[0].description
+                }
+            }
+
+
+        }
     } catch (err) {
         const error = new Error.createPgError(err, __moduleName, __functionName);
         error.alert();

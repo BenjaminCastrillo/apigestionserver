@@ -13,6 +13,9 @@ module.exports = {
     getDefaultNetwork: 'SELECT id FROM network WHERE default_ LIMIT 1',
     getDefaultStatus: 'SELECT id FROM status WHERE default_ LIMIT 1',
 
+    getTextLicenseById: 'SELECT a.value_ id, b.text_ description FROM parameter a INNER JOIN language_description b ON a.id_description=b.id_description WHERE a.column_=\'valid_license\' AND a.value_=$1 AND b.id_language IN ($2,0)',
+
+
     getOrientations: 'SELECT a.value_ id, b.text_ description FROM parameter a INNER JOIN language_description b ON a.id_description=b.id_description WHERE a.column_=\'orientation\' AND b.id_language IN ($1,0)',
     getOrientationById: 'SELECT a.value_ id, b.text_ description FROM parameter a INNER JOIN language_description b ON a.id_description=b.id_description WHERE a.column_=\'orientation\' AND a.value_=$1 AND b.id_language IN ($2,0)',
     getOs: 'SELECT id, description FROM operating_system WHERE NOT deleted',
@@ -102,6 +105,7 @@ module.exports = {
 
     deleteVenue: 'UPDATE venue SET delete_date = $2,deleted = true WHERE id=$1',
     deleteSite: 'UPDATE site SET delete_date = $2,deleted = true WHERE id=$1',
+    deleteSiteByIdVenue: 'UPDATE site SET delete_date = $2,deleted = true WHERE id_venue=$1',
     updateStatusSite: 'UPDATE site SET status = $2 WHERE id=$1',
 
     updateVenue: 'UPDATE venue SET id_customer=$2 ,name=$3,id_road_type=$4,address=$5,street_number=$6,id_country=$7,postal_code=$8,latitude=$9,longitude=$10,id_market_region=$11,id_brand=$12,image=$13 WHERE id=$1',
@@ -117,7 +121,7 @@ module.exports = {
 
     updateVenueImageById: 'UPDATE venue SET image = $2 WHERE id = $1',
     updateSiteImageById: 'UPDATE site SET image = $2 WHERE id = $1',
-
+    updateStatusSite: 'UPDATE site SET id_status = $2 WHERE id = $1',
 
     // user queries ---------------
 
@@ -127,7 +131,7 @@ module.exports = {
 
     getUsers: 'SELECT id id_user,name,surname,last_access,notes,id_language,entry_date,email, password, user_relationship,rol,blocked FROM user_app WHERE NOT deleted AND NOT admin ORDER BY id',
     getUserById: 'SELECT id id_user, name, surname, last_access,notes, id_language, entry_date,email, password, user_relationship, rol,blocked  FROM user_app WHERE id=$1 AND NOT deleted',
-    getUserEmail: 'SELECT id id_user, name, surname, last_access,notes, id_language, entry_date,email, password, user_relationship, rol,blocked FROM user_app WHERE email=$1 AND NOT deleted',
+    getUserEmail: 'SELECT id, name, surname, last_access,notes, id_language, entry_date,email, password, user_relationship, rol,blocked,admin,wrong_attemps FROM user_app WHERE email=$1 AND NOT deleted',
     getNextIdUser: 'SELECT nextval(\'user_app_id_seq\')',
     getCustomerByIdUser: 'SELECT id_customer,id_user,exception FROM user_customer WHERE id_user=$1 AND NOT deleted',
 
@@ -135,11 +139,11 @@ module.exports = {
     insertUserCustomer: 'INSERT INTO user_customer(id_user,id_customer) VALUES ($1,$2)',
     insertCategory: 'INSERT INTO category(description,color,id_user) VALUES ($1,$2,$3)',
 
-    updateUserPassword: 'UPDATE user_app SET name=$2 ,surname=$3,id_language=$4,email=$5,password=$6,rol=$7,user_relationship=$8,notes=$9,blocked=$10 WHERE id=$1',
-    updateUserNoPassword: 'UPDATE user_app SET name=$2 ,surname=$3,id_language=$4,email=$5,rol=$6,user_relationship=$7,notes=$8,blocked=$9 WHERE id=$1',
+    updateUserPassword: 'UPDATE user_app SET name=$2 ,surname=$3,id_language=$4,email=$5,password=$6,rol=$7,user_relationship=$8,notes=$9,blocked=$10,wrong_attemps=$11 WHERE id=$1',
+    updateUserNoPassword: 'UPDATE user_app SET name=$2 ,surname=$3,id_language=$4,email=$5,rol=$6,user_relationship=$7,notes=$8,blocked=$9,wrong_attemps=$10 WHERE id=$1',
     updateUserCustomer: 'UPDATE user_customer SET exception=$2, deleted=$3,delete_date=$4 WHERE id=$1',
     updateCategory: 'UPDATE category SET description=$2, color=$3, deleted=$4,delete_date=$5 WHERE id=$1',
-
+    updateUserAccess: 'UPDATE user_app SET last_access=$2 ,blocked=$3, wrong_attemps=$4 WHERE id=$1',
 
     deleteUser: 'UPDATE user_app SET delete_date = $2, deleted = true WHERE id=$1',
     deleteCategoryByIdUser: 'UPDATE category SET delete_date = $2, deleted = true WHERE id_user=$1',

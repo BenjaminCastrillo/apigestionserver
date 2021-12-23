@@ -12,6 +12,7 @@
             { "id": 2, "name": "English", "code": "en_gb" }
         ]
     },
+    "authentication_key": "clavesecreta2021",
     "db_screen_inventory": {
         "user": "postgres",
         "host": "localhost",
@@ -27,9 +28,9 @@
     },
 
     "storage": {
-        "basePath": "/filer",
-        "conversionPath": "/filer/conversion",
-        "tempFolder": "/filer/temp",
+        "basePath": "/files",
+        "conversionPath": "/files/conversion",
+        "tempFolder": "/files/temp",
         "images": "/home/benjamin/files"
     },
     "servers": {

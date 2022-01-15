@@ -33,6 +33,7 @@ const { expressAuthentication } = require('../modules/middlwares');
 
 router.post('/login', login.validUser);
 
+
 //* Generales
 router.get('/', catalog.getInicio);
 
@@ -80,16 +81,18 @@ router.get('/brands/:customer_id', expressAuthentication, [param('customer_id').
 // router.get('/brandById/:id', catalog_customer.getBrandById);
 router.get('/screenlocation/:customer_id', expressAuthentication, [param('customer_id').isInt().withMessage('Invalid parameter')], catalog_customer.getScreenLocationByIdCustomer);
 router.get('/sitescode/:customer_id', expressAuthentication, [param('customer_id').isInt().withMessage('Invalid parameter')], catalog_customer.getSitesCodeByIdCustomer);
+router.get('/sitecodebyacronym/:acronym', expressAuthentication, catalog_customer.getSiteCodeByAcronym);
 router.post('/brandimage', expressAuthentication, catalog_customer.insertImageBrand);
-router.get('/brandimage/:image', expressAuthentication, catalog_customer.getImageBrand);
+router.get('/brandimage/:image', catalog_customer.getImageBrand);
 router.get('/schedules/:customer_id/:language_id', expressAuthentication, [param('language_id').isInt().withMessage('Invalid parameter')], catalog_customer.getSchedulesByIdCustomer);
 
 
 //* ---------------------------------------------------------------------------
 //* Users
-router.get('/users/:language_id', [param('language_id').isInt().withMessage('Invalid parameter')], users.getUsers);
-router.get('/userbyid/:id/:language_id', [param('id').isInt().withMessage('invalid parameter'), param('language_id').isInt().withMessage('invalid parameter')], users.getUserById);
-router.get('/userbyemail/:email/:language_id', [param('language_id').isInt().withMessage('invalid parameter')], users.getUserByEmail);
+router.get('/users/:language_id', expressAuthentication, [param('language_id').isInt().withMessage('Invalid parameter')], users.getUsers);
+router.get('/userbyid/:id/:language_id', expressAuthentication, [param('id').isInt().withMessage('invalid parameter'), param('language_id').isInt().withMessage('invalid parameter')], users.getUserById);
+router.get('/userbyemail/:email/:language_id', expressAuthentication, [param('language_id').isInt().withMessage('invalid parameter')], users.getUserByEmail);
+router.get('/siteexceptionsbyuser/:user_id/:language_id', expressAuthentication, [param('user_id').isInt().withMessage('Invalid parameter')], users.siteExceptionsByUser);
 router.post('/users', expressAuthentication, users.insertUser);
 router.put('/users', expressAuthentication, users.updateUser);
 router.delete('/users/:id', expressAuthentication, [param('id').isInt().withMessage('invalid parameter')], users.deleteUser);
@@ -107,19 +110,20 @@ router.put('/venues', expressAuthentication, venues.updateVenue);
 router.delete('/venues/:id', expressAuthentication, [param('id').isInt().withMessage('invalid parameter')], venues.deleteVenue);
 
 // image venues
-router.get('/venueimage/:image', expressAuthentication, venues.getImageVenue);
+router.get('/venueimage/:image', venues.getImageVenue);
 router.post('/venueimage', expressAuthentication, venues.insertImageVenue);
 router.put('/venueimage/:venue_id', expressAuthentication, venues.putImageVenue);
 
 //* ---------------------------------------------------------------------------
 //* Sites
 router.get('/sitesbyid/:site_id/:user_id/:language_id', expressAuthentication, [param('site_id').isInt().withMessage('invalid parameter')], sites.sitesById);
+router.get('/sitesbycustomer/:customer_id/:language_id', expressAuthentication, [param('customer_id').isInt().withMessage('invalid parameter')], sites.sitesByCustomer);
 router.put('/sites', expressAuthentication, sites.updateSite);
 router.put('/statusites', expressAuthentication, sites.updateStatusSite);
 router.delete('/sites/:id', expressAuthentication, [param('id').isInt().withMessage('invalid parameter')], sites.deleteSite);
 
 // image sites
-router.get('/siteimage/:image', expressAuthentication, sites.getImageSite);
+router.get('/siteimage/:image', sites.getImageSite);
 router.post('/siteimage', expressAuthentication, sites.insertImageSite);
 router.put('/siteimage/:site_id', expressAuthentication, sites.putImageSite);
 

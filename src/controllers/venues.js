@@ -542,6 +542,7 @@ async function getAllVenues(userId, language, returnSites) {
         // to get venues's list
         venues = await getVenuesByUserId(userId);
 
+
         if (returnSites) {
 
             // to get sites for each venue

@@ -57,7 +57,7 @@ class Site {
             },
 
             resolutionWidth: resolution_width,
-            resolutionHeigth: resolution_height,
+            resolutionHeight: resolution_height,
             screenType: {
                 id: id_screen_type,
                 description: des_screen_type,

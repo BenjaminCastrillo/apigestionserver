@@ -858,7 +858,7 @@ async function getSitesByVenueIdAndUserId(venueId, userId, exceptions, customerI
 }
 
 /**
- ** Obtener el nombre del estado del site por id y lenguaje
+ ** Obtener datos del site del site por id y lenguaje teiedo en cuenta las exceciones del usuario
  ** Get state name by id and languaje
  *@Params siteId, userId, exceptions
  --------------------------------

@@ -24,9 +24,10 @@ const {
     getScreenModelById,
     getScreenTypeById,
     getSiteById,
-
     validVenueByUser,
 } = require('../modules/servicesdatavenuesandsites');
+
+const { getExceptionDescriptions } = require('../modules/servicesdatauser');
 
 const { getCustomerById } = require('../modules/servicesdatacustomer');
 
@@ -387,6 +388,58 @@ const putImageSite = (req, res) => {
 
 
 
+/**
+ ** Retorna los sites  de un cliente
+ ** Return  sites  by cutomerid
+
+ 
+ --------------------------------
+ */
+
+
+const sitesByCustomer = (req, res) => {
+
+    const __functionName = 'sitesByCustomer';
+    const err = validationResult(req); // result of param evaluation 
+    if (!paramValidation(err, req, res)) return
+
+    let language = (validLanguages.includes(req.params.language_id)) ? [req.params.language_id] : defaultLanguage;
+    let error;
+    const param = [req.params.customer_id];
+    let sites = [];
+
+    conectionDB.pool.query(queries.getSitesByCustomer, param)
+        .then((response) => {
+            getExceptionDescriptions(response.rows)
+                .then(response => {
+                    res.json({
+                        result: true,
+                        data: response,
+                        message: null
+                    });
+                })
+                .catch(err => {
+                    res.status(500).json({
+                        result: false,
+                        message: err
+                    });
+                })
+
+        })
+        .catch(err => {
+            error = new Error.createPgError(err, __moduleName, __functionName);
+            res.status(500).json({
+                result: false,
+                message: 'Error interno del servidor'
+            });
+            error.alert();
+        });
+
+    return
+
+}
+
+
 /*--------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------*/
 
@@ -397,7 +450,7 @@ const putImageSite = (req, res) => {
  ** Devuelve lal lista de venues y sites permitidos para el usuario
  ** 
  ** Tablas: 
- *@param venueId, userId,language, returnSites
+ *@param siteId, userId,language, returnSites
  **
  *?response un objeto Venue
  ***********************************/
@@ -409,6 +462,7 @@ async function getOneSite(siteId, userId, language) {
     let exceptions = [];
     let userExceptions = [];
     let result = [];;
+
 
 
 
@@ -486,6 +540,8 @@ async function getSitesDescriptions(sites, language, user) {
     let osName;
     let customerName;
     let identificationCustomer;
+
+
 
     for (let i = 0; i < sites.length; i++) {
 
@@ -756,6 +812,7 @@ async function saveImageFileSite(file, imageCodeArray, resultadoOk) {
 
 module.exports = {
     sitesById,
+    sitesByCustomer,
     updateSite,
     updateStatusSite,
     deleteSite,
@@ -763,5 +820,6 @@ module.exports = {
     insertImageSite,
     putImageSite,
     getSitesDescriptions,
+    getOneSite
 
 }

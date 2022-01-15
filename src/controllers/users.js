@@ -1,6 +1,8 @@
 const { body, validationResult } = require('express-validator');
 const validator = require('validator');
 const clase = require('../models/user');
+
+
 const moment = require('moment');
 const bcryptjs = require('bcryptjs');
 const conectionDB = require('../modules/database');
@@ -13,8 +15,11 @@ const {
     getUserCustomer,
     getUserExceptionsSites,
     getUserCategories,
-    getRolById
+    getRolById,
+    getExceptionDescriptions
 } = require('../modules/servicesdatauser');
+
+
 
 //  languajes data
 const validLanguages = [];
@@ -302,6 +307,57 @@ const deleteUser = (req, res) => {
 }
 
 
+/**
+ ** Retorna las excepciones de un usuario
+ ** Return exceptions sites  by userid
+
+ 
+ --------------------------------
+ */
+
+
+const siteExceptionsByUser = (req, res) => {
+
+    const __functionName = 'siteExceptionsByUser';
+    const err = validationResult(req); // result of param evaluation 
+    if (!paramValidation(err, req, res)) return
+
+    let language = (validLanguages.includes(req.params.language_id)) ? [req.params.language_id] : defaultLanguage;
+    let error;
+    const param = [req.params.user_id];
+    let sites = [];
+
+    conectionDB.pool.query(queries.getExceptionSitesByUser, param)
+        .then((response) => {
+            getExceptionDescriptions(response.rows)
+                .then(response => {
+                    res.json({
+                        result: true,
+                        data: response,
+                        message: null
+                    });
+                })
+                .catch(err => {
+                    res.status(500).json({
+                        result: false,
+                        message: err
+                    });
+                })
+
+        })
+        .catch(err => {
+            error = new Error.createPgError(err, __moduleName, __functionName);
+            res.status(500).json({
+                result: false,
+                message: 'Error interno del servidor'
+            });
+            error.alert();
+        });
+
+    return
+
+}
+
 // Private functions
 
 /**********************************
@@ -371,6 +427,7 @@ async function insertUserData(userData, idUser) {
     ];
     const userCustomer = userData.customerUserList;
     const categories = userData.categories;
+    const excepciones = userData.sitesList;
     let fecha = new Date();
     let dataInsert = [];
 
@@ -391,6 +448,14 @@ async function insertUserData(userData, idUser) {
             try {
                 dataInsert = [categories[i].description, categories[i].color, idUser];
                 await conectionDB.pool.query(queries.insertCategory, dataInsert);
+            } catch (err) {
+                throw err;
+            }
+        }
+        for (let i = 0; i < excepciones.length; i++) {
+            try {
+                dataInsert = [idUser, excepciones[i].siteId];
+                await conectionDB.pool.query(queries.insertException, dataInsert);
             } catch (err) {
                 throw err;
             }
@@ -432,6 +497,8 @@ async function updateUserData(userData, newPassword) {
 
     const userCustomer = userData.customerUserList;
     const categories = userData.categories;
+    const exceptions = userData.sitesList;
+
 
     try {
         await conectionDB.pool.query('BEGIN');
@@ -476,6 +543,21 @@ async function updateUserData(userData, newPassword) {
                 throw err;
             }
         }
+        for (let i = 0; i < exceptions.length; i++) {
+            try {
+                if (exceptions[i].id && exceptions[i].deleted) {
+                    dataQuery = [exceptions[i].id];
+                    await conectionDB.pool.query(queries.deleteException, dataQuery);
+
+                } else { // registro nuevo
+                    dataQuery = [userData.id, exceptions[i].siteId];
+                    await conectionDB.pool.query(queries.insertException, dataQuery);
+
+                }
+            } catch (err) {
+                throw err;
+            }
+        }
         await conectionDB.pool.query('COMMIT');
     } catch (err) {
 
@@ -513,6 +595,8 @@ async function deleteUserData(userId) {
         await conectionDB.pool.query(queries.deleteUser, dataQuery);
         await conectionDB.pool.query(queries.deleteCategoryByIdUser, dataQuery);
         await conectionDB.pool.query(queries.deleteUserCustomerIdUser, dataQuery);
+        await conectionDB.pool.query(queries.deleteExceptionByIdUser, [userId]);
+
         await conectionDB.pool.query('COMMIT');
     } catch (err) {
         conectionDB.pool.query('ROLLBACK');
@@ -554,5 +638,7 @@ module.exports = {
     updateUser,
     deleteUser,
     getUserById,
-    getUserByEmail
+    getUserByEmail,
+    siteExceptionsByUser,
+    getExceptionDescriptions
 }

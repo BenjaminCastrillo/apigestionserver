@@ -18,12 +18,13 @@ const validUser = async(req, res) => {
     const user = req.body.user;
     const appOrigin = req.body.app;
     let numIntentos;
-
+    console.log('lo que recibo', req.body)
     let param = [user];
     console.log(user);
 
     conectionDB.pool.query(queries.getUserEmail, param)
         .then((response) => {
+
 
             if (response.rowCount === 1) {
                 const passwordOk = bcryptjs.compareSync(req.body.password, response.rows[0].password)
@@ -47,6 +48,7 @@ const validUser = async(req, res) => {
 
                         const token = jwt.sign(usuario, key, { expiresIn: '5m' })
                             //   res.header('authorization', token).json({
+                        console.log('token:', token);
                         res.json({
                             result: true,
                             data: usuario,
@@ -105,6 +107,10 @@ const validUser = async(req, res) => {
 
     return
 }
+
+
+
 module.exports = {
     validUser,
+
 }

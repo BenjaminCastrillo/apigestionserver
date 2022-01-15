@@ -221,8 +221,8 @@ async function getSchedulesData(customerId, languageId) {
 }
 
 /**
- ** Obtener la lista de codigos validos para el codigo de emplazamiento para un id de cliente
- ** Get list of sites codes  for a  id client
+ ** Obtener la lista de codigos validos para generar el codigo de emplazamiento para un id de cliente
+ ** Get list of valid sites codes for a  id client
  ** Tablas: site_comercial_code
  *@Params customerId
  --------------------------------
@@ -260,6 +260,41 @@ const getSitesCodeByIdCustomer = (req, res) => {
                     data: response.rows
                 });
             }
+        })
+        .catch(e => {
+            error = new Error.createPgError(e, __moduleName, __functionName);
+            res.status(500).json({
+                result: false,
+                message: error.userMessage
+            });
+            error.alert();
+
+        });
+}
+
+/**
+ ** Obtener la lista de todos los codigos validos para generar el codigo de emplazamiento para los clientes
+ ** Get list of valid sites codes
+ ** Tablas: site_comercial_code
+ *@Params
+ --------------------------------
+ */
+
+const getSiteCodeByAcronym = (req, res) => {
+    const __functionName = 'getSiteCodeByAcronym';
+    const err = validationResult(req); // result of param evaluation 
+    if (!paramValidation(err, req, res, 1)) return
+    let error;
+    let acronym = [req.params.acronym];
+
+
+    conectionDB.pool.query(queries.getSiteComercialCodesByAcronym, acronym)
+        .then(response => {
+            res.status(200).json({
+                result: true,
+                data: response.rows
+            });
+
         })
         .catch(e => {
             error = new Error.createPgError(e, __moduleName, __functionName);
@@ -475,6 +510,7 @@ module.exports = {
     getBrandsByIdCustomer,
     getScreenLocationByIdCustomer,
     getSitesCodeByIdCustomer,
+    getSiteCodeByAcronym,
     getSchedulesByIdCustomer,
     insertImageBrand,
     getImageBrand,

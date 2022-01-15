@@ -69,7 +69,7 @@ module.exports = {
     getSitesByVenueId: 'SELECT a.id id_site, a.id_site_comercial,a.id_pti,a.id_venue,a.id_customer,a.id_network,a.id_status,a.entry_date,a.image,a.public_,a.on_off,a.text_,a.id_screen_location,b.id id_player,b.serial_number,b.mac,b.id_orientation id_orientation_player,b.id_os,b.os_version,b.app_version,b.license_id,c.id id_screen,c.inches,c.serial_number,c.id_screen_brand,c.id_screen_model,c.resolution_width,c.resolution_height,c.id_screen_type,c.pixel,c.id_orientation,c.screen_width, c.screen_height,c.modules_width,c.modules_height,c.situation FROM site a INNER JOIN player b ON a.id = b.id_site LEFT JOIN screen c ON a.id = c.id_site WHERE a.id_venue = $1 AND NOT a.deleted ORDER BY a.id',
     getSitesById: 'SELECT a.id id_site, a.id_site_comercial,a.id_pti,a.id_venue,a.id_customer,a.id_network,a.id_status,a.entry_date,a.image,a.public_,a.on_off,a.text_,a.id_screen_location,b.id id_player,b.serial_number,b.mac,b.id_orientation id_orientation_player,b.id_os,b.os_version,b.app_version,b.license_id,c.id id_screen,c.inches,c.serial_number serial_,c.id_screen_brand,c.id_screen_model,c.resolution_width,c.resolution_height,c.id_screen_type,c.pixel,c.id_orientation,c.screen_width, c.screen_height,c.modules_width,c.modules_height,c.situation FROM site a INNER JOIN player b ON a.id = b.id_site LEFT JOIN screen c ON a.id = c.id_site WHERE a.id = $1 AND NOT a.deleted',
     getNextIdSite: 'SELECT nextval(\'site_id_seq\')',
-
+    getSitesByCustomer: 'SELECT id id_site, id_site_comercial,id_venue,id_customer,id_screen_location FROM site WHERE id_customer = $1 AND NOT deleted ORDER BY id',
 
     getCategoryBySiteAndUser: ' SELECT b.id , b.description, b.color FROM site_user_category a INNER JOIN category b ON a.id_category=b.id WHERE a.id_site = $1 AND a.id_user = $2 AND NOT b.deleted ',
     getCategoryBySite: 'SELECT b.id , b.description, b.color,c.email email FROM site_user_category a INNER JOIN category b ON a.id_category = b.id INNER JOIN user_app c ON a.id_user = c.id WHERE a.id_site = $1 AND NOT b.deleted ',
@@ -89,36 +89,31 @@ module.exports = {
 
     insertVenue: 'INSERT INTO venue(id, id_customer, name, id_road_type, address, street_number,id_country,postal_code,latitude,longitude,id_market_region,id_brand,image,entry_date) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11,$12,$13,$14)',
     insertLocationVenue: 'INSERT INTO location(id_territorial_org,id_territorial_ent,id_venue,hierarchy_) VALUES($1, $2, $3, $4)',
-
     insertSite: 'INSERT INTO site(id, id_site_comercial, id_pti, id_venue, id_customer, id_network,entry_date, id_status) VALUES($1, $2, $3, $4, $5, $6, $7, $8)',
     insertScheduleVenue: 'INSERT INTO venue_schedule(id_venue,id_customer_schedule) VALUES($1,$2)',
-
     insertPhoneContactVenue: 'INSERT INTO contact_phone(id_contact_venue,phone_number,notes) VALUES($1,$2,$3)',
-    getNextIdContact: 'SELECT nextval(\'contact_venue_id_seq\')',
     insertContactVenue: 'INSERT INTO contact_venue(id,name,email,notes,id_venue) VALUES($1,$2,$3,$4,$5)',
     insertScreen: 'INSERT INTO screen(id_site) VALUES($1)',
     insertPlayer: 'INSERT INTO player(id_site,license_id) VALUES($1,$2)',
+    insertLicense: 'INSERT INTO license(id,license_number,entry_date,duration_months) VALUES($1,$2,$3,$4)',
 
+    getNextIdContact: 'SELECT nextval(\'contact_venue_id_seq\')',
     getNextIdLicense: 'SELECT nextval(\'license_id_seq\')',
 
-    insertLicense: 'INSERT INTO license(id,license_number,entry_date,duration_months) VALUES($1,$2,$3,$4)',
 
     deleteVenue: 'UPDATE venue SET delete_date = $2,deleted = true WHERE id=$1',
     deleteSite: 'UPDATE site SET delete_date = $2,deleted = true WHERE id=$1',
     deleteSiteByIdVenue: 'UPDATE site SET delete_date = $2,deleted = true WHERE id_venue=$1',
-    updateStatusSite: 'UPDATE site SET status = $2 WHERE id=$1',
 
+    updateStatusSite: 'UPDATE site SET status = $2 WHERE id=$1',
     updateVenue: 'UPDATE venue SET id_customer=$2 ,name=$3,id_road_type=$4,address=$5,street_number=$6,id_country=$7,postal_code=$8,latitude=$9,longitude=$10,id_market_region=$11,id_brand=$12,image=$13 WHERE id=$1',
     updateLocationVenue: 'UPDATE location SET id_territorial_org=$2,id_territorial_ent=$3 WHERE id=$1',
     updateScheduleVenue: 'UPDATE venue_schedule SET deleted=$2,delete_date=$3 WHERE id=$1',
     updateContactVenue: 'UPDATE contact_venue SET name=$2,email=$3,notes=$4,deleted=$5,delete_date=$6 WHERE id=$1',
     updatePhoneContactVenue: 'UPDATE contact_phone SET id_contact_venue=$2,phone_number=$3,notes=$4,deleted=$5,delete_date=$6 WHERE id=$1',
-
     updateSite: 'UPDATE site SET id_status=$2 ,public_=$3,on_off=$4,text_=$5,id_screen_location=$6,image=$7 WHERE id=$1',
     updateScreen: 'UPDATE screen SET inches=$2 ,serial_number=$3,id_screen_brand=$4,id_screen_model=$5,resolution_width=$6,resolution_height=$7,id_screen_type=$8,situation=$9,screen_width=$10,screen_height=$11,id_orientation=$12,pixel=$13,modules_width=$14,modules_height=$15 WHERE id=$1',
     updatePlayer: 'UPDATE player SET serial_number=$2,id_orientation=$3 WHERE id=$1',
-
-
     updateVenueImageById: 'UPDATE venue SET image = $2 WHERE id = $1',
     updateSiteImageById: 'UPDATE site SET image = $2 WHERE id = $1',
     updateStatusSite: 'UPDATE site SET id_status = $2 WHERE id = $1',
@@ -126,18 +121,21 @@ module.exports = {
     // user queries ---------------
 
     getCategoriesByUser: 'SELECT id, description, color ,deleted FROM category WHERE id_user = $1 AND NOT deleted ',
-    getCustomerByUser: 'SELECT a.id, a.id_customer, b.name,a.exception, a.deleted FROM user_customer a INNER JOIN customer b ON a.id_customer=b.id WHERE a.id_user= $1 AND NOT a.deleted',
-    getExceptionSitesByUser: 'SELECT a.id_site id,b.id_site_comercial comercialCode FROM user_exception_site a INNER JOIN site b ON a.id_site=b.id WHERE a.id_user= $1',
+    // getExceptionSitesByUser: 'SELECT a.id_site id,b.id_site_comercial comercialCode FROM user_exception_site a INNER JOIN site b ON a.id_site=b.id WHERE a.id_user= $1',
+
+    getExceptionSitesByUser: 'SELECT a.id, b.id id_site, b.id_site_comercial,b.id_venue,b.id_customer,b.id_screen_location FROM user_exception_site a INNER JOIN site b ON a.id_site = b.id WHERE a.id_user = $1 AND NOT b.deleted ORDER BY a.id_site',
 
     getUsers: 'SELECT id id_user,name,surname,last_access,notes,id_language,entry_date,email, password, user_relationship,rol,blocked FROM user_app WHERE NOT deleted AND NOT admin ORDER BY id',
     getUserById: 'SELECT id id_user, name, surname, last_access,notes, id_language, entry_date,email, password, user_relationship, rol,blocked  FROM user_app WHERE id=$1 AND NOT deleted',
     getUserEmail: 'SELECT id, name, surname, last_access,notes, id_language, entry_date,email, password, user_relationship, rol,blocked,admin,wrong_attemps FROM user_app WHERE email=$1 AND NOT deleted',
     getNextIdUser: 'SELECT nextval(\'user_app_id_seq\')',
     getCustomerByIdUser: 'SELECT id_customer,id_user,exception FROM user_customer WHERE id_user=$1 AND NOT deleted',
+    //  getExceptionByUser: 'SELECT a.id b.id_site, b.id_site_comercial,b.id_venue,b.id_customer,b.id_screen_location FROM user_exception_site a INNER JOIN site b ON a.id_site = b.id WHERE a.id_user = $1 AND NOT b.deleted ',
 
     insertUserApp: 'INSERT INTO user_app(id,name,surname,id_language,email,password,rol,user_relationship,notes,blocked) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)',
     insertUserCustomer: 'INSERT INTO user_customer(id_user,id_customer) VALUES ($1,$2)',
     insertCategory: 'INSERT INTO category(description,color,id_user) VALUES ($1,$2,$3)',
+    insertException: 'INSERT INTO user_exception_site(id_user,id_site) VALUES ($1,$2)',
 
     updateUserPassword: 'UPDATE user_app SET name=$2 ,surname=$3,id_language=$4,email=$5,password=$6,rol=$7,user_relationship=$8,notes=$9,blocked=$10,wrong_attemps=$11 WHERE id=$1',
     updateUserNoPassword: 'UPDATE user_app SET name=$2 ,surname=$3,id_language=$4,email=$5,rol=$6,user_relationship=$7,notes=$8,blocked=$9,wrong_attemps=$10 WHERE id=$1',
@@ -148,15 +146,18 @@ module.exports = {
     deleteUser: 'UPDATE user_app SET delete_date = $2, deleted = true WHERE id=$1',
     deleteCategoryByIdUser: 'UPDATE category SET delete_date = $2, deleted = true WHERE id_user=$1',
     deleteUserCustomerIdUser: 'UPDATE user_customer SET delete_date = $2, deleted = true WHERE id_user=$1',
+    deleteUserByIdCustomer: 'UPDATE user_customer SET delete_date = $2,deleted = true WHERE id_customer=$1',
+    deleteException: 'DELETE FROM  user_exception_site WHERE id=$1',
+    deleteExceptionByIdUser: 'DELETE FROM  user_exception_site WHERE id_user=$1',
 
     // ---------
     // customer queries -----------
-
     getCustomers: 'SELECT id, identification, name,phone_number,entry_date,contact_name FROM customer WHERE NOT deleted ORDER BY id ',
     getCustomersByIdCustomer: 'SELECT id, identification, name,phone_number,entry_date,contact_name FROM customer WHERE id = $1 AND NOT deleted',
     getCustomerById: 'SELECT id, identification, name,phone_number,entry_date,contact_name FROM customer WHERE id = $1',
     getCustomersByIdentification: 'SELECT id, identification, name,phone_number,entry_date ,contact_name FROM customer WHERE identification = $1 AND NOT deleted',
     getNextIdCustomer: 'SELECT nextval(\'customer_id_seq\')',
+    getCustomerByUser: 'SELECT a.id, a.id_customer, b.name,b.identification,a.exception, a.deleted FROM user_customer a INNER JOIN customer b ON a.id_customer=b.id WHERE a.id_user= $1 AND NOT a.deleted ORDER BY b.id',
 
 
     getBrandsByIdCustomer: 'SELECT id, description,image,color, id_customer, deleted FROM brand WHERE id_customer= $1 AND NOT deleted ORDER BY id',
@@ -164,15 +165,16 @@ module.exports = {
     getBrandById: 'SELECT id id_brand, description,image,color, id_customer, deleted FROM brand WHERE id= $1',
     getBrandByImage: 'SELECT id id_brand,id_customer FROM brand WHERE image= $1 LIMIT 1',
 
-    getMarketRegionsByIdCustomer: 'SELECT id, description, id_customer, deleted FROM market_region WHERE id_customer= $1 ORDER BY id',
+    getMarketRegionsByIdCustomer: 'SELECT id, description, id_customer, deleted FROM market_region WHERE id_customer= $1 AND NOT deleted ORDER BY id',
     getMarketRegionsById: 'SELECT id id_market_region, description, id_customer,deleted FROM market_region WHERE id= $1',
 
     getScreenLocationById: 'SELECT id id_screen_location,description, deleted FROM screen_location WHERE id = $1 ',
     getScreenLocationByIdCustomer: 'SELECT id,description, id_customer, deleted  FROM screen_location WHERE id_customer = $1 AND NOT deleted ORDER BY id',
 
     getSiteComercialCodeByIdCustomer: 'SELECT id,acronym, id_customer,deleted  FROM site_comercial_code WHERE id_customer = $1 AND NOT deleted ORDER BY id',
-    getSiteComercialCodeById: 'SELECT id,acronym, current_year, sequence  FROM site_comercial_code WHERE id = $1',
 
+    getSiteComercialCodesByAcronym: 'SELECT id,acronym, id_customer,deleted  FROM site_comercial_code WHERE acronym=$1 AND NOT deleted ORDER BY id',
+    getSiteComercialCodeById: 'SELECT id,acronym, current_year, sequence  FROM site_comercial_code WHERE id = $1',
 
 
     getScheduleVenueByCustomerId: 'SELECT  id,description,week_schedule,start_date,deleted  FROM customer_schedule WHERE id_customer=$1 AND NOT deleted ORDER BY id',
@@ -202,7 +204,6 @@ module.exports = {
     deleteSiteComercialCodeByIdCustomer: 'UPDATE site_comercial_code SET delete_date = $2,deleted = true WHERE id_customer=$1',
     deleteSchedulesByIdCustomer: 'UPDATE customer_schedule SET delete_date = $2,deleted = true WHERE id_customer=$1',
 
-    deleteUserByIdCustomer: 'UPDATE user_customer SET delete_date = $2,deleted = true WHERE id_customer=$1',
 
     // ---------
 }

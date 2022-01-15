@@ -1,8 +1,17 @@
 const conectionDB = require('./database');
 const queries = require('../models/queries');
+const claseException = require('../models/exceptions_sites');
 
 const Error = require('./errors/index');
 
+
+const {
+    getVenueById,
+    getScreenLocationById,
+
+} = require('./servicesdatavenuesandsites');
+
+const { getCustomerById } = require('./servicesdatacustomer');
 
 // inicializacion de constantes
 const __moduleName = 'src/modules/servicesdatauser';
@@ -30,7 +39,19 @@ async function getUserCustomer(userId) {
 
     try {
         let response = await conectionDB.pool.query(queries.getCustomerByUser, param);
-        result = response.rows
+        for (let i = 0; i < response.rows.length; i++) {
+
+            result[i] = {
+                id: response.rows[i].id,
+                customerId: response.rows[i].id_customer,
+                customerName: response.rows[i].name,
+                identification: response.rows[i].identification,
+                exception: response.rows[i].exception,
+                deleted: response.rows[i].deleted,
+            };
+
+        }
+
     } catch (err) {
         let error = new Error.createPgError(err, __moduleName, __functionName);
         error.alert();
@@ -48,13 +69,21 @@ async function getUserExceptionsSites(userId) {
     let result = new Array();
 
     try {
+
         let response = await conectionDB.pool.query(queries.getExceptionSitesByUser, param);
-        result = response.rows
-    } catch (err) {
+
+        if (response.rows.length > 0) {
+            result = await getExceptionDescriptions(response.rows);
+        }
+
+    } catch {
+
         let error = new Error.createPgError(err, __moduleName, __functionName);
         error.alert();
         throw error.userMessage;
-    };
+    }
+
+
     return result;
 
 }
@@ -101,9 +130,53 @@ async function getRolById(rolId, languageId) {
     return result;
 }
 
+
+
+async function getExceptionDescriptions(sites) {
+    const __functionName = 'getExceptionDescriptions';
+    let screenLocationObject = {};
+    let customerObject = {};
+    let venue = [];
+    let exception = {};
+    // let screenLocationDescription;
+    // let screenLocationDeleted;
+    let exceptionsObject = [];
+
+
+    for (let i = 0; i < sites.length; i++) {
+
+
+        //    screenLocationObject = await getScreenLocationById(sites[i].id_screen_location);
+        customerObject = await getCustomerById(sites[i].id_customer);
+        venue = await getVenueById(sites[i].id_venue);
+
+        //   screenLocationDescription = (JSON.stringify(screenLocationObject) == '{}') ? null : screenLocationObject.description;
+        // screenLocationDeleted = (JSON.stringify(screenLocationObject) == '{}') ? null : screenLocationObject.deleted;
+
+        exception = new claseException.ExceptionsSites(
+            sites[i].id,
+            sites[i].id_site,
+            sites[i].id_site_comercial,
+            venue[0].name,
+            customerObject.id,
+            customerObject.identification,
+            customerObject.name,
+            //     sites[i].id_screen_location,
+            //     screenLocationDescription,
+            //    screenLocationDeleted,
+            false
+        );
+
+        exceptionsObject.push(exception);
+    }
+    return exceptionsObject
+}
+
+
 module.exports = {
     getUserCustomer,
     getUserExceptionsSites,
     getUserCategories,
     getRolById,
+    getExceptionDescriptions,
 }

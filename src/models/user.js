@@ -20,7 +20,7 @@ class User {
         this.entryDate = entry_date;
         this.blocked = blocked;
         this.customerUserList = customers;
-        this.sitesLists = sites;
+        this.sitesList = sites;
         this.categories = categories;
     }
 

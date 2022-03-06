@@ -32,13 +32,14 @@ const { expressAuthentication } = require('../modules/middlwares');
 //* login
 
 router.post('/login', login.validUser);
-
+router.get('/validtoken/:user_id', login.validToken);
 
 //* Generales
 router.get('/', catalog.getInicio);
 
 router.get('/countries/:language_id', expressAuthentication, [param('language_id').isInt().withMessage('Invalid parameter')],
     catalog.getCountries);
+router.get('/config/:site_id', catalog.getConfig);
 router.get('/roadtypes/:language_id', expressAuthentication, [param('language_id').isInt().withMessage('Invalid parameter')],
     catalog.getRoadTypes);
 router.get('/status/:language_id', expressAuthentication, [param('language_id').isInt().withMessage('Invalid parameter')],
@@ -102,6 +103,8 @@ router.delete('/users/:id', expressAuthentication, [param('id').isInt().withMess
 //  param('language_id').isInt().withMessage('invalid parameter'), no es necesario se pone lenguaje por defecto
 router.get('/venuesandsitesbyuser/:user_id/:language_id', expressAuthentication, [param('user_id').isInt().withMessage('invalid parameter')], venues.venuesAndSitesByUser);
 router.get('/venueandsitesbyid/:venue_id/:user_id/:language_id', expressAuthentication, [param('venue_id').isInt().withMessage('invalid parameter')], venues.venueAndSitesById);
+router.get('/venuesandsitesbycustomer/:customer_id/:user_id/:language_id', expressAuthentication, [param('customer_id').isInt().withMessage('invalid parameter')], venues.venueAndSitesByCustomer);
+
 router.get('/venuebyid/:venue_id/:user_id/:language_id', expressAuthentication, [param('venue_id').isInt().withMessage('invalid parameter')], venues.venueById);
 router.get('/venuesbyuser/:user_id/:language_id', expressAuthentication, [param('user_id').isInt().withMessage('invalid parameter')], venues.venuesByUser);
 

@@ -192,7 +192,7 @@ const insertUser = async(req, res) => {
         req.body.surname, req.body.lastAccess, req.body.languageId, req.body.email, passwordHash,
         req.body.rol.id, req.body.rol.description, req.body.relationship, req.body.notes, req.body.entryDate,
         req.body.blocked, req.body.customerUserList,
-        req.body.sitesLists, req.body.categories);
+        req.body.sitesList, req.body.categories);
 
     conectionDB.pool.query(queries.getNextIdUser)
         .then((response) => {
@@ -245,7 +245,7 @@ const updateUser = (req, res) => {
         req.body.surname, req.body.lastAccess, req.body.languageId, req.body.email, req.body.password,
         req.body.rol.id, req.body.rol.description, req.body.relationship, req.body.notes, req.body.entryDate,
         req.body.blocked, req.body.customerUserList,
-        req.body.sitesLists, req.body.categories)
+        req.body.sitesList, req.body.categories)
 
     updateUserData(userObject, req.body.newPassword)
         .then(response => {
@@ -549,7 +549,7 @@ async function updateUserData(userData, newPassword) {
                     dataQuery = [exceptions[i].id];
                     await conectionDB.pool.query(queries.deleteException, dataQuery);
 
-                } else { // registro nuevo
+                } else if (!exceptions[i].id) { // registro nuevo
                     dataQuery = [userData.id, exceptions[i].siteId];
                     await conectionDB.pool.query(queries.insertException, dataQuery);
 

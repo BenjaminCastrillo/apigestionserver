@@ -26,6 +26,7 @@ const {
     getSitesByVenueIdAndUserId,
     getVenueById,
     getVenuesByUserId,
+    getVenuesByCustomerId,
     getWeekDays,
     validVenueByUser,
 
@@ -120,6 +121,45 @@ const venuesAndSitesByUser = (req, res) => {
         })
 }
 
+
+
+
+/**
+ ** Obtener lista de locales de un cliente
+ ** To Get a customer's venue list
+ **
+ *@Params customer_id user_Id, languageI_d
+ --------------------------------
+ */
+
+const venueAndSitesByCustomer = (req, res) => {
+    const __functionName = 'venueAndSitesByCustomer';
+    const err = validationResult(req); // result of param evaluation 
+    const returnSites = true;
+    if (!paramValidation(err, req, res, 1)) return
+    const userId = req.params.user_id;
+    const customerId = req.params.customer_id;
+
+    // if language_id not found to get default language
+    let language = (validLanguages.includes(req.params.language_id)) ? [req.params.language_id] : defaultLanguage;
+
+
+    getAllVenues(userId, language, returnSites, customerId)
+        .then(response => {
+
+            res.json({
+                result: true,
+                data: response
+            });
+        })
+        .catch(err => {
+            res.status(500).json({
+                result: false,
+                message: err
+            });
+        })
+}
+
 /**
  ** Obtener los datos de un local por id
  ** Get the data venue for venue id
@@ -165,7 +205,7 @@ const venueAndSitesById = (req, res) => {
 const venueById = (req, res) => {
     const __functionName = 'venueById';
     const err = validationResult(req); // result of param evaluation 
-    const returnSites = false;
+    const returnSites = true;
     if (!paramValidation(err, req, res, 1)) return
     const userId = req.params.user_id;
     const venueId = req.params.venue_id;
@@ -267,7 +307,6 @@ const updateVenue = (req, res) => {
         req.body.brand.deleted, req.body.marketRegion.id, req.body.marketRegion.description,
         req.body.marketRegion.deleted, fecha, req.body.contact,
         req.body.schedule, req.body.sites);
-
 
 
     updateVenueData(venueObject, req.body.newSite)
@@ -517,7 +556,7 @@ const putImageVenue = (req, res) => {
  *?response array de objetos Venue
  ***********************************/
 
-async function getAllVenues(userId, language, returnSites) {
+async function getAllVenues(userId, language, returnSites, customerId = 0) {
     const __functionName = 'getAllVenues';
     let sites = [];
     let venues = [];
@@ -531,16 +570,19 @@ async function getAllVenues(userId, language, returnSites) {
 
         // to get exception by user
         exceptions = await getExceptionSitesByUser(userId);
-
         if (exceptions.length > 0) {
             exceptions.forEach(element => {
-                userExceptions.push(element.id)
+                userExceptions.push(element.id_site)
             });
         }
 
-
         // to get venues's list
-        venues = await getVenuesByUserId(userId);
+
+        if (customerId === 0) {
+            venues = await getVenuesByUserId(userId);
+        } else {
+            venues = await getVenuesByCustomerId(customerId);
+        }
 
 
         if (returnSites) {
@@ -849,6 +891,10 @@ async function insertVenueData(venueData, newSites, idVenue) {
 async function updateVenueData(venueData, newSites) {
 
     const __functionName = 'updateVenueData';
+
+
+    console.log(venueData);
+
     const dataQuery = [venueData.id, venueData.customer.id, venueData.name, venueData.roadType.id,
         venueData.address, venueData.streetNumber, venueData.country.id,
         venueData.postalCode, venueData.latitude, venueData.longitude, venueData.marketRegion.id,
@@ -876,8 +922,8 @@ async function updateVenueData(venueData, newSites) {
         let defaultStatus = await getDefaultStatus();
 
         await conectionDB.pool.query('BEGIN');
-
         await conectionDB.pool.query(queries.updateVenue, dataQuery);
+
         for (let i = 0; i < location.length; i++) {
             try {
                 dataUpdate = [location[i].id, location[i].territorialOrganizationId, location[i].territorialEntityId];
@@ -886,6 +932,7 @@ async function updateVenueData(venueData, newSites) {
                 throw err;
             }
         }
+
 
         for (let i = 0; i < schedule.length; i++) {
             try {
@@ -903,6 +950,7 @@ async function updateVenueData(venueData, newSites) {
                 throw err;
             }
         }
+
 
 
         for (let i = 0; i < contact.length; i++) {
@@ -942,6 +990,8 @@ async function updateVenueData(venueData, newSites) {
                 throw err;
             }
         }
+
+
         for (let i = 0; i < site.length; i++) {
 
             try {
@@ -1191,6 +1241,7 @@ module.exports = {
     venuesByUser,
     venuesAndSitesByUser,
     venueAndSitesById,
+    venueAndSitesByCustomer,
     venueById,
     insertVenue,
     updateVenue,

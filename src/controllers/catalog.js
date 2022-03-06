@@ -5,8 +5,6 @@ const { body, validationResult } = require('express-validator');
 const config = require('../modules/config');
 
 const Error = require('../modules/errors/index');
-
-
 const __moduleName = 'src/controllers/catalog';
 
 // constants languajes 
@@ -94,6 +92,39 @@ const getDurationLicenses = (req, res) => {
         data: config.validDurationLicenses
     });
 }
+
+
+/**
+ ** Obtener fichero configuracion players
+ ** Get setup players
+*  Tables:
+ *@Params  id_site
+ --------------------------------
+ */
+
+const getConfig = (req, res) => {
+    const __functionName = 'getConfig';
+    let error;
+    let siteId = [req.params.site_id];
+
+    conectionDB.pool.query(queries.getDataConfig, siteId)
+        .then(response => {
+            res.status(200).json({
+                result: true,
+                data: response.rows
+            });
+        })
+        .catch(e => {
+            error = new Error.createPgError(err, __moduleName, __functionName)
+            res.status(500).json({
+                result: false,
+                message: error.userMessage
+            });
+            error.alert();
+
+        });
+}
+
 
 
 /**
@@ -680,6 +711,7 @@ const paramValidation = (err, req, res, errorCode) => {
 module.exports = {
     getInicio,
     getCountries,
+    getConfig,
     getDurationLicenses,
     getLanguages,
     getNetworks,

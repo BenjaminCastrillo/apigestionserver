@@ -3,6 +3,7 @@ module.exports = {
 
 
     getCountries: 'SELECT a.id id_country,b.text_, a.code1, a.code2, a.code_iso FROM country a INNER JOIN language_description b ON a.id_description=b.id_description WHERE b.id_language IN ($1,0) AND NOT a.deleted ORDER BY b.text_',
+    getDataConfig: 'select a.id_site_comercial, a.id_pti,a.id_venue,b.id_orientation, c.license_number,c.expiration_date from site a INNER JOIN player b ON a.id = b.id_site INNER JOIN license c ON c.id = b.license_id WHERE a.id_site_comercial = $1 AND NOT a.deleted ',
     getCountryById: 'SELECT a.id id_country,b.text_, a.code1, a.code2, a.code_iso FROM country a INNER JOIN language_description b ON a.id_description=b.id_description WHERE a.id=$1 AND b.id_language IN ($2,0)',
     getLicenseById: 'SELECT id id_license, license_number, activation_date ,expiration_date, duration_months from license WHERE id=$1',
 
@@ -74,7 +75,7 @@ module.exports = {
     getCategoryBySiteAndUser: ' SELECT b.id , b.description, b.color FROM site_user_category a INNER JOIN category b ON a.id_category=b.id WHERE a.id_site = $1 AND a.id_user = $2 AND NOT b.deleted ',
     getCategoryBySite: 'SELECT b.id , b.description, b.color,c.email email FROM site_user_category a INNER JOIN category b ON a.id_category = b.id INNER JOIN user_app c ON a.id_user = c.id WHERE a.id_site = $1 AND NOT b.deleted ',
 
-    getLocationByVenue: 'SELECT a.id,a.id_territorial_ent,c.text_,a.id_territorial_org FROM location a INNER JOIN territorial_entities b ON  a.id_territorial_ent=b.id INNER JOIN language_description c ON b.id_description=c.id_description  WHERE a.id_venue=$1 AND c.id_language IN ($2,0) ORDER BY a.hierarchy_',
+    getLocationByVenue: 'SELECT a.id,a.id_territorial_ent,c.text_,a.id_territorial_org, a.hierarchy_ FROM location a INNER JOIN territorial_entities b ON  a.id_territorial_ent=b.id INNER JOIN language_description c ON b.id_description=c.id_description  WHERE a.id_venue=$1 AND c.id_language IN ($2,0) ORDER BY a.hierarchy_',
     getContactsByVenueIdBB: 'SELECT a.id,a.name,a.email,a.notes notes_contact, a.deleted deleted_contact,b.id id_contact_phone,b.phone_number,b.notes notes_phone,b.deleted deleted_phone FROM contact_venue a INNER JOIN contact_phone b ON a.id=b.id_contact_venue WHERE a.id_venue=$1 AND NOT a.deleted AND NOT b.deleted ORDER BY a.id',
     getContactsByVenueId: 'SELECT id,name,email,notes notes_contact, deleted FROM contact_venue a WHERE id_venue=$1 AND NOT deleted ORDER BY id',
     getPhonesByContactId: 'SELECT id id_contact_phone,phone_number,notes notes_phone, deleted FROM contact_phone WHERE id_contact_venue=$1 AND NOT deleted ORDER BY id',

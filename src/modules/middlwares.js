@@ -3,37 +3,45 @@ const jwt = require('jsonwebtoken');
 // const config = require('./config');
 const basicAuth = require('express-basic-auth');
 const config = require('../modules/config');
-const { getNextIdSite } = require('../models/queries');
+const moment = require('moment');
+
 
 const expressAuthentication = (req, res, next) => {
 
     // console.log(config.expresscredentials.username);
     // console.log(config.expresscredentials.password);
     const accessToken = req.headers['authorization'];
-    console.log("CODIGO DE AUTENTICACION PARSEADO", accessToken)
 
-    // if (!accessToken) {
-    //     res.status(401).json({
-    //         result: false,
-    //         data: 'Usuario no autorizado, sin token'
-    //     });
-    // } else {
+    if (!accessToken) {
+        res.status(401).json({
+            result: false,
+            data: 'Usuario no autorizado, sin token'
+        });
+    } else {
+        jwt.verify(accessToken, config.authentication_key, (err, usuario) => {
+            console.log('usuario', usuario.email);
 
-    //     jwt.verify(accessToken, config.authentication_key, (err, usuario) => {
+            const hora1 = moment.unix(usuario.iat).format("DD-MM-YYYY h:mm:ss");
+            const hora2 = moment.unix(usuario.exp).format("DD-MM-YYYY h:mm:ss");
+            console.log('hora generacion', hora1);
+            console.log('hora expiracion', hora2);
 
-    //         if (err) {
-    //             res.status(401).json({
-    //                 result: false,
-    //                 data: 'Usuario no autorizado'
-    //             });
+            if (err) {
+                res.status(401).json({
+                    result: false,
+                    data: 'Usuario no autorizado'
+                });
 
-    //         } else {
-    //             next()
+            } else {
+                next()
 
-    //         }
-    //     });
-    // }
-    next();
+            }
+        });
+    }
+
+
+
+
     return
 }
 

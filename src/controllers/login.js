@@ -25,7 +25,6 @@ const validUser = async(req, res) => {
     conectionDB.pool.query(queries.getUserEmail, param)
         .then((response) => {
 
-
             if (response.rowCount === 1) {
                 const passwordOk = bcryptjs.compareSync(req.body.password, response.rows[0].password)
 
@@ -33,7 +32,6 @@ const validUser = async(req, res) => {
 
                 if (passwordOk && !response.rows[0].blocked) {
                     if (appOrigin == 1 || (appOrigin == 0 && response.rows[0].admin)) {
-                        console.log('todo correcto');
                         numIntentos = 0;
                         ''
                         // creamos token 
@@ -46,7 +44,7 @@ const validUser = async(req, res) => {
                             email: response.rows[0].email,
                         }
 
-                        const token = jwt.sign(usuario, key, { expiresIn: '5m' })
+                        const token = jwt.sign(usuario, key, { expiresIn: '30m' })
                             //   res.header('authorization', token).json({
                         console.log('token:', token);
                         res.json({
@@ -73,7 +71,6 @@ const validUser = async(req, res) => {
                     });
                 }
                 param = [response.rows[0].id, fecha, numIntentos > 3 ? true : false, numIntentos];
-                console.log('los parametros del update', param);
 
 
                 conectionDB.pool.query(queries.updateUserAccess, param)
@@ -109,8 +106,77 @@ const validUser = async(req, res) => {
 }
 
 
+const validToken = async(req, res) => {
+
+    const accessToken = req.headers['authorization'];
+    const userId = req.params.user_id;
+    const key = config.authentication_key;
+    let param = [userId];
+
+    console.log('en valid token');
+
+    if (!accessToken) {
+        res.status(401).json({
+            result: false,
+            data: 'Usuario no autorizado, sin token'
+        });
+    } else {
+        jwt.verify(accessToken, key, (err) => {
+
+            if (err) {
+                res.status(401).json({
+                    result: false,
+                    data: 'Usuario no autorizado'
+                });
+
+            } else {
+
+                conectionDB.pool.query(queries.getUserById, param)
+                    .then((response) => {
+
+                        if (response.rowCount === 1) {
+                            const usuario = {
+                                id: response.rows[0].id,
+                                name: response.rows[0].name,
+                                surname: response.rows[0].surname,
+                                email: response.rows[0].email,
+                            }
+                            const token = jwt.sign(usuario, key, { expiresIn: '30m' })
+
+                            res.status(200).json({
+                                result: true,
+                                data: 'Token valido',
+                                token: token
+                            });
+                        } else {
+                            res.status(500).json({ // error interno el usuario enviado no existe
+                                result: false,
+                                data: 'Error interno del servidor *x'
+                            });
+
+                        }
+                    })
+                    .catch(err => {
+                        error = new Error.createPgError(err, __moduleName, __functionName);
+                        res.status(500).json({
+                            result: false,
+                            message: error.userMessage
+                        });
+                        error.alert();
+                    });
+
+
+
+            }
+        });
+    }
+
+    return
+}
 
 module.exports = {
     validUser,
+    validToken
+
 
 }

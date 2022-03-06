@@ -14,7 +14,7 @@ const { zeroFill } = require('../modules/util');
 
 
 // inicializacion de constantes
-const __moduleName = 'src/modules/servicesdata';
+const __moduleName = 'src/modules/servicesdatavenuesandsites';
 
 
 /**********************************
@@ -455,7 +455,7 @@ async function getLocationByVenueId(venueId, languageId) {
         let description = territorialOrg.find(elemento => elemento.id == result[ind].id_territorial_org);
 
         locationObject[ind] = new clase.Location(result[ind].id, result[ind].id_territorial_org, description.text_,
-            result[ind].id_territorial_ent, result[ind].text_);
+            result[ind].id_territorial_ent, result[ind].text_, result[ind].hierarchy_);
     }
     return locationObject;
 }
@@ -820,6 +820,7 @@ async function getSitesByVenueIdAndUserId(venueId, userId, exceptions, customerI
         let response = await conectionDB.pool.query(queries.getCustomerByIdUser, param);
         customer = response.rows;
 
+
         if (customer.length > 0) { // si es 0  es superusuario
             exceptionType = customer.find(elem => elem.id_customer == customerId).exception;
         }
@@ -841,15 +842,15 @@ async function getSitesByVenueIdAndUserId(venueId, userId, exceptions, customerI
             break;
         case 1:
             for (let i = 0; i < result.length; i++) {
-                index = exceptions.indexOf(result[i].id_site)
-                if (index === -1) respuesta.push(result[i]);
+                index = exceptions.indexOf(result[i].id_site);
+                if (index != -1) respuesta.push(result[i]);
             }
             break;
 
         case 2:
             for (let i = 0; i < result.length; i++) {
-                index = exceptions.indexOf(result[i].id_site)
-                if (index != -1) respuesta.push(result[i]);
+                index = exceptions.indexOf(result[i].id_site);
+                if (index === -1) respuesta.push(result[i]);
             }
             break;
 
@@ -896,14 +897,14 @@ async function getSiteById(siteId, userId, exceptions) {
             case 0:
                 respuesta = result;
                 break;
-            case 1: // las excepciones se retiran
+            case 1: // las excepciones se devuelven
                 index = exceptions.indexOf(result[0].id_site)
-                    // si no esta el id_site en las excepciones 
-                if (index === -1) respuesta.push(result[0]);
-                break;
-            case 2: // solo las excepciones se devuelven
-                index = exceptions.indexOf(result[0].id_site)
+                    // si  esta el id_site en las excepciones 
                 if (index != -1) respuesta.push(result[0]);
+                break;
+            case 2: // solo las excepciones se retiran
+                index = exceptions.indexOf(result[0].id_site)
+                if (index === -1) respuesta.push(result[0]);
                 break;
 
         }
@@ -1011,6 +1012,38 @@ async function getVenuesByUserId(userId) {
     return result;
 }
 
+
+
+
+
+
+/**
+ ** Obtener locales de un usuario cliente
+ ** Get venues data by customer
+ *@Params userId
+ --------------------------------
+ */
+
+
+async function getVenuesByCustomerId(customerId) {
+
+    const __functionName = 'getVenuesByCustomerId';
+    const param = [customerId];
+    let result = new Array();
+
+    try {
+
+        const response = await conectionDB.pool.query(queries.getVenuesByCustomerId, param);
+        result = response.rows;
+
+    } catch (err) {
+        const error = new Error.createPgError(err, __moduleName, __functionName);
+        error.alert();
+        throw error.userMessage;
+    };
+
+    return result;
+}
 
 /**
  ** Obtener locals por id
@@ -1163,6 +1196,7 @@ module.exports = {
     getStatusById,
     getUserById,
     getLicenseById,
+    getVenuesByCustomerId,
     getVenuesByUserId,
     getVenueById,
     getWeekDays,

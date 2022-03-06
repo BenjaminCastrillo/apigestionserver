@@ -1,7 +1,6 @@
 class User {
     constructor(id_user, name, surname, last_access, id_language, email, password, id_rol, desc_rol,
         user_relationship, notes, entry_date, blocked,
-
         customers, sites, categories) {
 
         this.id = id_user;

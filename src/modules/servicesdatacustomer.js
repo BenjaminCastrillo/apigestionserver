@@ -192,8 +192,8 @@ async function getCustomerSchedules(customerId, week) {
             dia = {
                 day: horario.substr(1, 1),
                 descriptionDay: descriptionDay.text_,
-                openingTime1: horario.substr(2, 2) + ':' + horario.slice(4, 6),
-                closingTime1: horario.substr(6, 2) + ':' + horario.slice(8, 10),
+                openingTime1: horario.substr(2, 2) != '--' ? horario.substr(2, 2) + ':' + horario.slice(4, 6) : null,
+                closingTime1: horario.substr(6, 2) != '--' ? horario.substr(6, 2) + ':' + horario.slice(8, 10) : null,
                 openingTime2: horario.substr(10, 2) != '--' ? horario.substr(10, 2) + ':' + horario.slice(12, 14) : null,
                 closingTime2: horario.substr(14, 2) != '--' ? horario.substr(14, 2) + ':' + horario.slice(16, 18) : null
             }

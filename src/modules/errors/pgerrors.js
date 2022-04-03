@@ -17,20 +17,19 @@ const pgErrorNames = {
 class PgError {
     constructor(err, processName, functionName) {
 
-        var errCode = 22001;
-        var error = pgErrorNames[errCode] || pgErrorNames['genericError']
 
+        var e = pgErrorNames[err.code] || pgErrorNames['genericError']
 
-        this.name = err.name;
+        this.name = e.errorName;
         this.typeError = 'Data Base access';
         this.error = (err.code) ? err.code : "0";
-        this.message = err.message;
+        this.message = e.message;
         this.hint = (err.hint) ? err.hint : "";
         this.routine = (err.routine) ? err.routine : "";
         this.processName = processName;
         this.functionName = functionName;
-        this.day = moment().format('YYYY-MM-DD hh:mm:ss');
-        this.userMessage = 'Error interno de acceso a datos';
+        this.day = moment().format('DD-MM-YYYY hh:mm:ss');
+        this.userMessage = 'Server error. Internal data access error';
     }
     alert() {
         console.log(this);

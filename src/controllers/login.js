@@ -1,33 +1,33 @@
 const bcryptjs = require('bcryptjs');
+const moment = require('moment');
+const jwt = require('jsonwebtoken');
+
 const queries = require('../models/queries');
 const config = require('../modules/config');
-const jwt = require('jsonwebtoken');
 const conectionDB = require('../modules/database');
 const Error = require('../modules/errors/index');
 
 const __moduleName = 'src/controllers/login';
-let accesoPermitido = true;
 
 
 
 const validUser = async(req, res) => {
     const __functionName = 'validUser';
     let error;
+    let ahora;
     const fecha = new Date();
     const key = config.authentication_key;
     const user = req.body.user;
     const appOrigin = req.body.app;
     let numIntentos;
-    console.log('lo que recibo', req.body)
     let param = [user];
-    console.log(user);
+
 
     conectionDB.pool.query(queries.getUserEmail, param)
         .then((response) => {
-
             if (response.rowCount === 1) {
                 const passwordOk = bcryptjs.compareSync(req.body.password, response.rows[0].password)
-
+                    //  const passwordOk = true
                 numIntentos = response.rows[0].wrong_attemps;
 
                 if (passwordOk && !response.rows[0].blocked) {
@@ -43,10 +43,11 @@ const validUser = async(req, res) => {
                             surname: response.rows[0].surname,
                             email: response.rows[0].email,
                         }
-
-                        const token = jwt.sign(usuario, key, { expiresIn: '30m' })
+                        ahora = moment().format('DD-MM-YYYY hh:mm:ss');
+                        console.log(`${ahora}--- Usuario ${usuario.email} conectado app ${appOrigin}`);
+                        const token = jwt.sign(usuario, key, { expiresIn: '60m' })
                             //   res.header('authorization', token).json({
-                        console.log('token:', token);
+
                         res.json({
                             result: true,
                             data: usuario,
@@ -54,39 +55,44 @@ const validUser = async(req, res) => {
                         });
 
                     } else {
-                        console.log('usuario no autorizado a la aplicacion de admin');
+                        error = new Error.createFuncError('usersNotAuthorized', user, __moduleName, __functionName);
                         numIntentos++;
                         res.status(401).json({
                             result: false,
-                            data: 'usuario no autorizado'
+                            data: error.userMessage
                         });
+                        error.alert();
                     }
                 } else {
-                    console.log('usuario incorrecto o bloqueado');
+                    error = new Error.createFuncError(passwordOk ? 'userNotActive' : 'badCredentials', user, __moduleName, __functionName);
                     // incrementar contador
                     numIntentos++;
                     res.status(401).json({
                         result: false,
-                        data: 'Usuario no autorizado'
+                        data: error.userMessage
                     });
+                    error.alert();
                 }
+
+                // actualizamos datos del acceso
                 param = [response.rows[0].id, fecha, numIntentos > 3 ? true : false, numIntentos];
+                conectionDB.pool.query(queries.updateUserAccess, param);
 
 
-                conectionDB.pool.query(queries.updateUserAccess, param)
-
-
-            } else if (response.rowCount === 0) {
+            } else if (response.rowCount === 0) { // usuario no existe
+                error = new Error.createFuncError('userNoExists', user, __moduleName, __functionName);
                 res.status(401).json({
                     result: false,
-                    data: 'Usuario no autorizado a'
+                    data: error.userMessage
                 });
-
-            } else {
-                res.status(500).json({ // error interno existe mas de un usuario con el mismo email
+                error.alert();
+            } else { // error interno existe mas de un usuario con el mismo email
+                error = new Error.createFuncError('twoUsersSameEmail', user, __moduleName, __functionName);
+                res.status(500).json({
                     result: false,
-                    data: 'Error interno del servidor *x'
+                    message: error.userMessage
                 });
+                error.alert();
             }
         })
         .catch(err => {
@@ -99,36 +105,37 @@ const validUser = async(req, res) => {
         });
 
 
-
-
-
     return
 }
 
 
 const validToken = async(req, res) => {
+    const __functionName = 'validToken';
 
     const accessToken = req.headers['authorization'];
     const userId = req.params.user_id;
     const key = config.authentication_key;
     let param = [userId];
+    let error;
 
-    console.log('en valid token');
 
     if (!accessToken) {
+        error = new Error.createFuncError('tokenNoExists', userId, __moduleName, __functionName);
         res.status(401).json({
             result: false,
-            data: 'Usuario no autorizado, sin token'
+            data: error.userMessage
         });
+        error.alert();
     } else {
         jwt.verify(accessToken, key, (err) => {
 
             if (err) {
+                error = new Error.createFuncError('invalidAccessToken', userId, __moduleName, __functionName);
                 res.status(401).json({
                     result: false,
-                    data: 'Usuario no autorizado'
+                    data: error.userMessage
                 });
-
+                error.alert();
             } else {
 
                 conectionDB.pool.query(queries.getUserById, param)
@@ -141,7 +148,7 @@ const validToken = async(req, res) => {
                                 surname: response.rows[0].surname,
                                 email: response.rows[0].email,
                             }
-                            const token = jwt.sign(usuario, key, { expiresIn: '30m' })
+                            const token = jwt.sign(usuario, key, { expiresIn: '60m' })
 
                             res.status(200).json({
                                 result: true,
@@ -149,11 +156,12 @@ const validToken = async(req, res) => {
                                 token: token
                             });
                         } else {
-                            res.status(500).json({ // error interno el usuario enviado no existe
+                            error = new Error.createFuncError('userNoExists', userId, __moduleName, __functionName);
+                            res.status(401).json({
                                 result: false,
-                                data: 'Error interno del servidor *x'
+                                data: error.userMessage
                             });
-
+                            error.alert();
                         }
                     })
                     .catch(err => {
@@ -177,6 +185,4 @@ const validToken = async(req, res) => {
 module.exports = {
     validUser,
     validToken
-
-
 }
